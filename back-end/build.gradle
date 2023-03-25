@@ -10,7 +10,7 @@ ext {
 }
 
 group = 'com.hitpot'
-version = '0.0.1.13'
+version = '0.0.1.15'
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
 

@@ -43,6 +43,7 @@ create table content (
   count_ip_nft_for_investor bigint(20) default 0 comment "给股东的视频的NFT的最大数量",
   count_max_limit_per_investor bigint(20) default 0 comment "每个原始股东持有的IP NFT的最大数量",
   price_ip_nft bigint(20) default 0 comment "NFT的单价",
+  count_ip_nft_left bigint(20) default 0 comment "NFT的单价",
   yield_rate_influencer double default 0 comment "大V分享收益占比",
   yield_rate_viewer double default 0 comment "观看者收益占比",
   disabled tinyint(4) default 0,
@@ -127,11 +128,11 @@ create table content_stock (
 create table user_transaction (
   id bigint(20) primary key auto_increment,
   user_id varchar(256),
-  transaction_type tinyint(4) default 0 comment "0:使用POT兑换HIT、1:充值POT、2:提现POT、3观看挖矿、4充值交易失败的退款(竞价兑换HIT)",
-  refund_transaction_id bigint(20) default null comment "当transaction_type=4时，关联用户交易记录中的失败记录",
+  transaction_type tinyint(4) default 0 comment "0:使用POT兑换HIT、1:充值POT、2:提现POT、3观看挖矿",
   status tinyint(20) default 0 comment "状态（当transaction_type=3或4）: 0交易成功, 1交易中, 2交易失败",
   amount_pot bigint(20) default 0 comment "交易的pot金额",
   amount_hit bigint(20) default 0 comment "交易的hit金额",
+  paid_time datetime,
   create_time datetime,
   last_modify_time datetime
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1;
@@ -146,7 +147,7 @@ create table content_hit_balance (
   balance_hit bigint(20) comment "剩余hit",
   balance_type tinyint(4) comment "注入类型: 0无广告注入, 1广告注入",
   ad_link varchar(2048) comment "广告链接",
-  ad_title bigint(20) comment "广告标题",
+  ad_title varchar(2048) comment "广告标题",
   create_time datetime,
   last_modify_time datetime
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1;
@@ -162,7 +163,6 @@ create table content_watch (
   user_level tinyint(4) default 0 comment "用户等级",
   utm_content varchar(256) comment "--如果用户通过分享链接注册, 标注分享链接的来源",
   referrer_user_id varchar(256) comment "--推荐人",
-  referrer_content_id bigint(29) comment "--推荐的视频",
   create_time datetime,
   last_modify_time datetime
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1;
@@ -171,6 +171,7 @@ create table content_watch (
 create table content_hit_consume (
   id bigint(20) primary key auto_increment,
   user_id varchar(256) comment "当consume_type=1时, 该字段不能为空",
+  content_id bigint(20) comment "视频id",
   content_watch_id bigint(20) comment "关联的观看记录",
   consume_type tinyint(4) default 0 comment "消费类型: 0消费视频注入的hit,需要关联content_consume表, 1自动消费用户钱包中的hit",
   amount_hit bigint(20) default 0 comment "消耗hit数量",

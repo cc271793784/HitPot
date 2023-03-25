@@ -18,5 +18,5 @@ public class ContentPurchaseNftForm {
     @ApiModelProperty("购买NFT的数量")
     private Long count;
     @ApiModelProperty("使用POT的数量")
-    private Long amountPot;
+    private double amountPot;
 }

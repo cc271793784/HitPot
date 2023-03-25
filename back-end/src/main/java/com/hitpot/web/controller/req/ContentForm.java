@@ -30,7 +30,7 @@ public class ContentForm {
     @ApiModelProperty("每个原始股东持有的IP NFT的最大数量")
     private Long maxCountIpNftForPerInvestor;
     @ApiModelProperty("NFT单价")
-    private Long priceIpNft;
+    private double priceIpNft;
     @ApiModelProperty("注入HIT的数量")
-    private Long amountHit;
+    private double amountHit;
 }

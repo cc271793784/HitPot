@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @ApiModel("兑换HIT表单")
 public class ExchangeHitForm {
     @ApiModelProperty("要兑换的HIT数量")
-    private Long countHit;
+    private double amountHit;
     @ApiModelProperty("HIT的价格")
-    private Double priceHit;
+    private double priceHit;
 }

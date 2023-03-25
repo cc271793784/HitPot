@@ -12,6 +12,7 @@ public final class DateUtils {
 
     private static final ZoneId ZONE_ID_SHANGHAI = ZoneId.of("Asia/Shanghai");
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    public static final DateTimeFormatter DATE_TIME_HOUR_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHH");
 
     public static long toMillis(LocalDateTime time) {
         return time.toInstant(ZONE_OFFSET_8).toEpochMilli();

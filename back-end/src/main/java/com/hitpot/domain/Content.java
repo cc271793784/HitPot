@@ -24,6 +24,7 @@ public class Content extends BaseEntity {
     private Long countIpNftForInvestor;
     private Long countMaxLimitPerInvestor;
     private Long priceIpNft;
+    private Long countIpNftLeft;
     private Double yieldRateInfluencer;
     private Double yieldRateViewer;
     private Boolean disabled;

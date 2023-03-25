@@ -2,6 +2,7 @@ package com.hitpot.web.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.hitpot.service.WalletService;
+import com.hitpot.service.vo.HitPriceVO;
 import com.hitpot.service.vo.ReturnBooleanVO;
 import com.hitpot.service.vo.WalletVO;
 import com.hitpot.web.controller.req.ContentCollectForm;
@@ -51,7 +52,7 @@ public class WalletController {
     }
 
     @ResponseBody
-    @PostMapping("purchase-content-nft")
+    @PostMapping("/purchase-content-nft")
     @ApiOperation("购买视频NFT份额")
     public RestResult<ReturnBooleanVO> purchaseContentNft(@RequestBody ContentPurchaseNftForm contentPurchaseNftForm) {
         String userId = StpUtil.getLoginIdAsString();
@@ -60,11 +61,18 @@ public class WalletController {
     }
 
     @ResponseBody
-    @PostMapping("exchange-hit")
+    @PostMapping("/exchange-hit")
     @ApiOperation("使用POT兑换HIT")
     public RestResult<ReturnBooleanVO> exchangeHit(@RequestBody ExchangeHitForm exchangeHitForm) {
         String userId = StpUtil.getLoginIdAsString();
         walletService.exchangeHit(userId, exchangeHitForm);
         return RestResult.success(ReturnBooleanVO.builder().success(true).build());
+    }
+
+    @ResponseBody
+    @GetMapping("/price-of-hit")
+    @ApiOperation("HIT的单价")
+    public RestResult<HitPriceVO> getHitPrice() {
+        return RestResult.success(walletService.getPriceOfHit());
     }
 }

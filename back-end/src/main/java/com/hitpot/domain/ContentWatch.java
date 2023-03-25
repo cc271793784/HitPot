@@ -21,5 +21,4 @@ public class ContentWatch extends BaseEntity {
     private Integer userLevel;
     private String utmContent;
     private String referrerUserId;
-    private Long referrerContentId;
 }

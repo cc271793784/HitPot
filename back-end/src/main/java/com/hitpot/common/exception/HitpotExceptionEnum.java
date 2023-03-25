@@ -11,10 +11,13 @@ public enum HitpotExceptionEnum {
     LOGIN_SIGNATURE_ERROR(10003, "签名错误"),
     PARAMETER_ERROR(20001, "请求参数错误"),
     CONTENT_NOT_EXIST(20002, "视频不存在"),
-    BALANCE_POT_NO_SUFFICIENT(20003, "POT余额不足"),
-    BALANCE_HIT_NO_SUFFICIENT(20004, "HIT余额不足"),
-    BALANCE_NFT_NO_SUFFICIENT(20005, "NFT余额不足"),
-    NFT_EXCEED_LIMIT_PER_INVESTOR(20006, "原始股东持有的NFT数量超过限制")
+    USER_NOT_EXIST(20003, "用户不存在"),
+    MATERIAL_NOT_EXIST(20004, "资源不存在"),
+    BALANCE_POT_NO_SUFFICIENT(20100, "POT余额不足"),
+    BALANCE_HIT_NO_SUFFICIENT(20101, "HIT余额不足"),
+    BALANCE_NFT_NO_SUFFICIENT(20102, "NFT余额不足"),
+    NFT_EXCEED_LIMIT_PER_INVESTOR(20103, "原始股东持有的NFT数量超过限制"),
+    WATCH_TIME_SUFFICIENT(20104, "观看时长不足"),
     ;
     private Integer id;
     private String msg;

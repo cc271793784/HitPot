@@ -14,6 +14,7 @@ import javax.persistence.Table;
 @AllArgsConstructor
 public class ContentHitConsume extends BaseEntity {
     private String userId;
+    private Long contentId;
     private Long contentWatchId;
     private Integer consumeType;
     private Long amountHit;

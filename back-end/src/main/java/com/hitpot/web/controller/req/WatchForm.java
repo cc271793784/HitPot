@@ -13,8 +13,4 @@ public class WatchForm {
     private Long duration;
     @ApiModelProperty("分享唯一标识")
     private String utmContent;
-    @ApiModelProperty("分享者id")
-    private String referrerUserId;
-    @ApiModelProperty("分享内容id")
-    private String referrerContentId;
 }

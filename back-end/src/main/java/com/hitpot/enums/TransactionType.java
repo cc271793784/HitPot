@@ -10,7 +10,6 @@ public enum TransactionType {
     USER_POT_DEPOSIT_TO_PLATFORM(1),
     USER_POT_WITHDRAW_FROM_PLATFORM(2),
     USER_POT_MINT(3),
-    USER_REFUND(4)
     ;
     private final int id;
 }

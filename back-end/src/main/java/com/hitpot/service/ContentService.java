@@ -4,29 +4,28 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.hitpot.common.PageChunk;
 import com.hitpot.common.PageUtils;
-import com.hitpot.common.exception.HitpotExceptionEnum;
 import com.hitpot.common.exception.HitpotException;
+import com.hitpot.common.exception.HitpotExceptionEnum;
 import com.hitpot.domain.*;
 import com.hitpot.enums.LevelType;
-import com.hitpot.repo.ContentMarkedRepository;
-import com.hitpot.repo.ContentRepository;
-import com.hitpot.repo.SubscriptionCreatorRepository;
-import com.hitpot.repo.UserTimelineRepository;
-import com.hitpot.service.vo.ContentVO;
-import com.hitpot.service.vo.PriceAndMintVO;
-import com.hitpot.service.vo.ShareVO;
-import com.hitpot.service.vo.TimelineVO;
+import com.hitpot.repo.*;
+import com.hitpot.service.vo.*;
 import com.hitpot.web.controller.req.*;
+import com.hitpot.domain.*;
+import com.hitpot.repo.*;
+import com.hitpot.service.vo.*;
+import com.hitpot.web.controller.req.*;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,7 +37,6 @@ public class ContentService {
     private UserService userService;
     @Autowired
     private JPAQueryFactory jpaQueryFactory;
-
     @Autowired
     private ContentRepository contentRepository;
     @Autowired
@@ -48,9 +46,18 @@ public class ContentService {
     @Autowired
     private UserTimelineRepository userTimelineRepository;
     @Autowired
+    private ContentWatchRepository contentWatchRepository;
+    @Autowired
     private WalletService walletService;
     @Autowired
     private ContentService contentService;
+
+    // 设置每个等级可观看的时长
+    public static final Map<LevelType, UserLevelPermission> LEVEL_TYPE_USER_LEVEL_PERMISSION_MAP = Map.of(
+        LevelType.GOLD, UserLevelPermission.builder().duration(3600L * 8).amountHitPerSecond(4).amountSecPerSecond(4).build(),
+        LevelType.SILVER, UserLevelPermission.builder().duration(3600L * 4).amountHitPerSecond(2).amountSecPerSecond(2).build(),
+        LevelType.NONE, UserLevelPermission.builder().duration(3600L * 2).amountHitPerSecond(1).amountSecPerSecond(1).build()
+    );
 
     public ContentVO postContent(String userId, ContentForm contentForm) {
         Material material = materialService.detailMaterial(contentForm.getVideoFilename());
@@ -66,12 +73,21 @@ public class ContentService {
             .countIpNft(contentForm.getCountIpNft())
             .countIpNftForInvestor(Double.valueOf(Math.floor(contentForm.getCountIpNft() * contentForm.getIpNftRatioForInvestor())).longValue())
             .countMaxLimitPerInvestor(contentForm.getMaxCountIpNftForPerInvestor())
-            .priceIpNft(contentForm.getPriceIpNft())
+            .priceIpNft(walletService.convertToMweiFromEther(contentForm.getPriceIpNft()))
             .yieldRateInfluencer(contentForm.getYieldRateOfInfluencer())
             .yieldRateViewer(contentForm.getYieldRateOfViewer())
             .deleted(false)
             .disabled(false)
             .build();
+
+        content.setCountIpNftLeft(content.getCountIpNft() - content.getCountIpNftForInvestor());
+
+        if (!contentForm.getEnabledIpNft()) {
+            content.setCountIpNft(0L);
+            content.setPriceIpNft(0L);
+            content.setCountIpNftForInvestor(0L);
+        }
+
         contentRepository.save(content);
 
         // 给创作者分配IP NFT
@@ -82,7 +98,7 @@ public class ContentService {
                 .build()
         );
 
-        if (contentForm.getAmountHit() != null && contentForm.getAmountHit() > 0) {
+        if (contentForm.getAmountHit() > 0) {
             walletService.contentCollectHit(userId,
                 ContentCollectForm.builder()
                     .amountHit(contentForm.getAmountHit())
@@ -95,6 +111,12 @@ public class ContentService {
         return buildContent(null, content);
     }
 
+    public void updateNftLeft(Long contentId, Long ipNftLeft) {
+        Optional<Content> optional = contentRepository.findById(contentId);
+        optional.get().setCountIpNftLeft(ipNftLeft);
+        contentRepository.save(optional.get());
+    }
+
     public ContentVO detailContent(String userId, Long contentId) throws HitpotException {
         Optional<Content> optional = contentRepository.findById(contentId);
         if (optional.isEmpty()) {
@@ -103,8 +125,78 @@ public class ContentService {
         return buildContent(userId, optional.get());
     }
 
-    public Boolean watchVideo(String userId, WatchForm watchForm) throws HitpotException {
-        return true;
+    // 判断当前用户已观看的时长是否符合挖矿限制: 金卡=8小时, 银卡=4小时, 无卡=2小时(单位秒)
+    private Long getWatchableDurationByUser(User user) {
+        String userId = user.getUserId();
+        Integer userLevel = user.getLevel();
+        Date startTime = DateTime.now().withTime(0, 0, 0, 0).toDate();
+        Date endTime = DateTime.now().withTime(23, 59, 59, 999).toDate();
+        QContentWatch qContentWatch = QContentWatch.contentWatch;
+        Long duration = jpaQueryFactory
+            .selectFrom(qContentWatch)
+            .select(
+                qContentWatch.duration.sum()
+            )
+            .where(qContentWatch.createTime.between(startTime, endTime).eq(qContentWatch.userId.eq(userId)))
+            .fetchOne();
+        if (duration == null) {
+            duration = 0L;
+        }
+        return LEVEL_TYPE_USER_LEVEL_PERMISSION_MAP.get(LevelType.getById(userLevel)).getDuration() - duration;
+    }
+
+    public ContentHitLeftVO watchVideo(String userId, WatchForm watchForm) throws HitpotException {
+        // 判断视频是否存在
+        Optional<Content> optional = contentRepository.findById(watchForm.getContentId());
+        if (optional.isEmpty()) {
+            throw new HitpotException(HitpotExceptionEnum.CONTENT_NOT_EXIST);
+        }
+
+        User user = userService.getUserByUserId(userId);
+        if (user == null) {
+            throw new HitpotException(HitpotExceptionEnum.USER_NOT_EXIST);
+        }
+        // 判断当前用户已观看的时长是否符合挖矿限制: 金卡=8小时, 银卡=4小时, 无卡=2小时
+        Long watchableDuration = getWatchableDurationByUser(user);
+        if (watchableDuration <= 0) {
+            throw new HitpotException(HitpotExceptionEnum.WATCH_TIME_SUFFICIENT);
+        }
+
+        // 如果观看时长小于观看时长，则将可观看时长扣到0
+        Long duration = watchForm.getDuration();
+        if (watchableDuration < duration) {
+            duration = watchableDuration;
+        }
+
+        String utmContent = null;
+        String referrerUserId = null;
+        if (StrUtil.isNotBlank(watchForm.getUtmContent())) {
+            ContentMarked contentMarked = contentMarkedRepository.findFirstByContentIdAndUtmContent(watchForm.getContentId(), watchForm.getUtmContent());
+            if (contentMarked != null) {
+                utmContent = watchForm.getUtmContent().trim();
+                referrerUserId = contentMarked.getUserId();
+            }
+        }
+
+        UserLevelPermission userLevelPermission =  LEVEL_TYPE_USER_LEVEL_PERMISSION_MAP.get(LevelType.getById(user.getLevel()));
+        ContentWatch contentWatch = ContentWatch.builder()
+            .userId(userId)
+            .contentId(watchForm.getContentId())
+            .amountHit(walletService.convertToMweiFromEther(userLevelPermission.getAmountHitPerSecond() * duration))
+            .amountSec(walletService.convertToMweiFromEther(userLevelPermission.getAmountSecPerSecond() * duration))
+            .duration(duration)
+            .userLevel(user.getLevel())
+            .utmContent(utmContent)
+            .referrerUserId(referrerUserId)
+            .build();
+        contentWatchRepository.save(contentWatch);
+
+        // 扣费
+        watchForm.setDuration(duration);
+        walletService.watchConsume(user, contentWatch, watchForm);
+
+        // 返回广告列表
+        return walletService.getLeftHit(watchForm.getContentId());
     }
 
     public Boolean likeVideo(String userId, Long contentId) {
@@ -281,6 +373,15 @@ public class ContentService {
         return getContentVOPageChunk(userId, contentIdList, pageRequest);
     }
 
+
+    public PageChunk<ContentVO> pageByStocking(String userId, PageRequest pageRequest) {
+        QContent qContent = QContent.content;
+        BooleanExpression queryExpression = qContent.countIpNftLeft.lt(0);
+        Page<Content> pagination = contentRepository.findAll(queryExpression, pageRequest);
+        Page<ContentVO> paginationVO = pagination.map(content -> buildContent(userId, content));
+        return PageUtils.buildContentVOPageChunk(paginationVO);
+    }
+
     public PageChunk<ContentVO> pageByShared(String userId, PageRequest pageRequest) {
         QContentMarked qContentMarked = QContentMarked.contentMarked;
         List<Long> contentIdList = jpaQueryFactory.selectDistinct(qContentMarked.contentId)
@@ -325,8 +426,30 @@ public class ContentService {
                 .contentTimelineId(userTimeline.getId())
                 .comment(userTimeline.getUserComment())
                 .content(contentService.detailContent(userId, userTimeline.getContentId()))
+                .createTime(userTimeline.getCreateTime())
                 .build());
         return PageUtils.buildContentVOPageChunk(paginationVO);
+    }
+
+    public List<ContentVO> listMostPopularContent() {
+        QContentWatch qContentWatch = QContentWatch.contentWatch;
+        List<Tuple> resultList = jpaQueryFactory
+            .selectFrom(qContentWatch)
+            .select(
+                qContentWatch.contentId,
+                qContentWatch.amountSec.sum().as("amountSec1")
+            )
+            .groupBy(qContentWatch.contentId)
+            .orderBy(Expressions.numberPath(Long.class, "amountSec1").desc())
+            .limit(3)
+            .fetch();
+        return resultList.stream()
+            .map(tuple -> {
+                Long contentId = tuple.get(0, Long.class);
+                Optional<Content> optional = contentRepository.findById(contentId);
+                return buildContent(null, optional.get());
+            })
+            .collect(Collectors.toList());
     }
 
     private PageChunk<ContentVO> getContentVOPageChunk(String userId, List<Long> contentIdList, PageRequest pageRequest) {
@@ -340,22 +463,8 @@ public class ContentService {
         return PageUtils.buildContentVOPageChunk(paginationVO);
     }
 
-    /**
-     * 根据角色获取用户消费hit的速率和生成SEC的速率
-     */
-    private PriceAndMintVO priceOfWatchVideo(Integer level) {
-        if (LevelType.NONE.getId() == level.intValue()) {
-            return PriceAndMintVO.builder().price(1L).mint(1L).build();
-        } else if (LevelType.SILVER.getId() == level.intValue()) {
-            return PriceAndMintVO.builder().price(2L).mint(2L).build();
-        } else if (LevelType.GOLD.getId() == level.intValue()) {
-            return PriceAndMintVO.builder().price(4L).mint(4L).build();
-        } else {
-            throw new RuntimeException();
-        }
-    }
-
     private ContentVO buildContent(String userId, Content content) {
+        ContentHitLeftVO contentHitLeftVO = walletService.getLeftHit(content.getId());
         ContentVO contentVO = ContentVO.builder()
             .contentId(content.getId())
             .creator(userService.detailUser(content.getUserId()))
@@ -370,10 +479,14 @@ public class ContentService {
             .countIpNft(content.getCountIpNft())
             .countIpNftForInvestor(content.getCountIpNftForInvestor())
             .countIpNftLeft(walletService.detailContentNft(content).getCountIpNftLeft())
-            .priceIpNft(content.getPriceIpNft())
-            .balanceHit(walletService.getLeftHit(content.getId()).getAmountHit())
+            .priceIpNft(walletService.convertToEtherFromMwei(content.getPriceIpNft()))
+            .balanceHit(contentHitLeftVO.getAmountHit())
+            .ads(contentHitLeftVO.getAds())
             .liked(false)
             .marked(false)
+            .yieldRateOfViewer(content.getYieldRateViewer())
+            .yieldRateOfInfluencer(content.getYieldRateInfluencer())
+            .createTime(content.getCreateTime())
             .build();
         if (userId != null) {
             ContentMarked contentMarked = contentMarkedRepository.findFirstByContentIdAndUserId(content.getId(), userId);
@@ -384,5 +497,4 @@ public class ContentService {
         }
         return contentVO;
     }
-
 }

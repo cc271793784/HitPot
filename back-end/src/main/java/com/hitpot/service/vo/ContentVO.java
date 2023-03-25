@@ -7,6 +7,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+import java.util.List;
+
 @ApiModel("视频")
 @Data
 @Builder
@@ -40,13 +43,21 @@ public class ContentVO {
     @ApiModelProperty("每个股东购买的最大NFT数量")
     private Long countMaxLimitPerInvestor;
     @ApiModelProperty("NFT单价")
-    private Long priceIpNft;
+    private double priceIpNft;
     @ApiModelProperty("为出售的NFT剩余数量")
     private Long countIpNftLeft;
     @ApiModelProperty("视频中剩余HIT数量")
-    private Long balanceHit;
+    private double balanceHit;
+    @ApiModelProperty("大V分享收益率")
+    private Double yieldRateOfInfluencer;
+    @ApiModelProperty("观看者收益率")
+    private Double yieldRateOfViewer;
     @ApiModelProperty("是否点赞")
     private Boolean liked;
     @ApiModelProperty("是否收藏")
     private Boolean marked;
+    @ApiModelProperty("广告列表")
+    private List<AdVO> ads;
+    @ApiModelProperty("发布时间")
+    private Date createTime;
 }

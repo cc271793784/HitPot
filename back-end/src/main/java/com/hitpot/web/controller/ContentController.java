@@ -3,15 +3,13 @@ package com.hitpot.web.controller;
 import cn.dev33.satoken.stp.StpUtil;
 import com.hitpot.common.PageChunk;
 import com.hitpot.service.ContentService;
-import com.hitpot.service.vo.ContentVO;
-import com.hitpot.service.vo.ReturnBooleanVO;
-import com.hitpot.service.vo.ShareVO;
-import com.hitpot.service.vo.TimelineVO;
+import com.hitpot.service.vo.*;
 import com.hitpot.web.controller.req.ContentForm;
 import com.hitpot.web.controller.req.ContentIdForm;
 import com.hitpot.web.controller.req.ShareForm;
 import com.hitpot.web.controller.req.WatchForm;
 import com.hitpot.web.result.RestResult;
+import com.hitpot.service.vo.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -20,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/content")
@@ -49,9 +49,9 @@ public class ContentController {
     @ResponseBody
     @PostMapping("/watch")
     @ApiOperation("观看视频的打点信息")
-    public RestResult<ReturnBooleanVO> watchVideo(@RequestBody WatchForm watchForm) throws Exception {
+    public RestResult<ContentHitLeftVO> watchVideo(@RequestBody WatchForm watchForm) throws Exception {
         String userId = StpUtil.getLoginIdAsString();
-        return RestResult.success(ReturnBooleanVO.builder().success(contentService.watchVideo(userId, watchForm)).build());
+        return RestResult.success(contentService.watchVideo(userId, watchForm));
     }
 
     @ResponseBody
@@ -192,7 +192,7 @@ public class ContentController {
 
     @ResponseBody
     @GetMapping("/page-content-by-timeline")
-    @ApiOperation("获取我收藏的视频列表")
+    @ApiOperation("获取我的时间线")
     public RestResult<PageChunk<TimelineVO>> listContentByTimeline(
         @ApiParam("每页条目数") @RequestParam(defaultValue = "20", required = false) Integer pageSize,
         @ApiParam("页数") @RequestParam(defaultValue = "20", required = false) Integer pageNo
@@ -200,5 +200,24 @@ public class ContentController {
         String userId = StpUtil.getLoginIdAsString();
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize , Sort.by("id").descending());
         return RestResult.success(contentService.pageByTimeline(userId, pageRequest));
+    }
+
+    @ResponseBody
+    @GetMapping("/page-content-by-stocking")
+    @ApiOperation("获取可投资的视频列表")
+    public RestResult<PageChunk<ContentVO>> listContentByStocking(
+        @ApiParam("每页条目数") @RequestParam(defaultValue = "20", required = false) Integer pageSize,
+        @ApiParam("页数") @RequestParam(defaultValue = "20", required = false) Integer pageNo
+    ) {
+        String userId = StpUtil.getLoginIdAsString();
+        PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize , Sort.by("id").descending());
+        return RestResult.success(contentService.pageByStocking(userId, pageRequest));
+    }
+
+    @ResponseBody
+    @GetMapping("/list-most-popular-content")
+    @ApiOperation("获取我收藏的视频列表")
+    public RestResult<List<ContentVO>> listMostPopularContent() {
+        return RestResult.success(contentService.listMostPopularContent());
     }
 }

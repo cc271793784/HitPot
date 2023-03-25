@@ -18,9 +18,9 @@ public class WalletVO {
     @ApiModelProperty("用户id")
     private String userId;
     @ApiModelProperty("POT余额")
-    private Long balancePot;
+    private double balancePot;
     @ApiModelProperty("HIT余额")
-    private Long balanceHit;
+    private double balanceHit;
     @ApiModelProperty("NFT类型及数量")
     private List<ContentNftVO> nfts;
 }

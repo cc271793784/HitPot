@@ -72,8 +72,8 @@ Content-Type: application/json
 Authorization: {{accessToken}}
 
 {
-  "coverImg": "image/77844e23edcd4a55af7a8e5b7a7edf22.jpg",
-  "videoFilename": "video/06147cf52a394a4a9324790ee65705d1.mp4",
+  "coverImg": "image/2d77c655609e4add80b65ab9194dea26.jpg",
+  "videoFilename": "video/212ebcdc2a744afc93ff943de7a9a5be.mp4",
   "title": "titl",
   "description": "descri",
   "watchLevel": 1,
@@ -84,7 +84,7 @@ Authorization: {{accessToken}}
   "maxCountIpNftForPerInvestor": 10,
   "yieldRateOfInfluencer": 0.3,
   "yieldRateOfViewer": 0.3,
-  "amountHit": 10
+  "amountHit": 0
 }
 
 ### 我赞过的视频
