@@ -20,4 +20,5 @@ public class UserTransaction extends BaseEntity {
     private Long amountPot;
     private Long amountHit;
     private Date paidTime;
+    private String transactionId;
 }

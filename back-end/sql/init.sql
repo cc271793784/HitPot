@@ -133,6 +133,7 @@ create table user_transaction (
   amount_pot bigint(20) default 0 comment "交易的pot金额",
   amount_hit bigint(20) default 0 comment "交易的hit金额",
   paid_time datetime,
+  transaction_id varchar(256),
   create_time datetime,
   last_modify_time datetime
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1;

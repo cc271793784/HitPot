@@ -71,7 +71,7 @@ public class WalletController {
 
     @ResponseBody
     @GetMapping("/price-of-hit")
-    @ApiOperation("HIT的单价")
+    @ApiOperation("获取HIT单价")
     public RestResult<HitPriceVO> getHitPrice() {
         return RestResult.success(walletService.getPriceOfHit());
     }

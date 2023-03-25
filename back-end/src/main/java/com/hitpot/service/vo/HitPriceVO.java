@@ -9,13 +9,13 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
-@ApiModel("HIT的单价 x POT/HIT")
+@ApiModel("HIT单价")
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class HitPriceVO {
-    @ApiModelProperty("单价")
+    @ApiModelProperty("单价(POT/HIT)")
     private double price;
     @ApiModelProperty("当前时间可兑换HIT")
     private double amountHitLeft;

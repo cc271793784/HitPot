@@ -3,7 +3,6 @@ package com.hitpot.contract;
 import io.reactivex.Flowable;
 import io.reactivex.functions.Function;
 import org.web3j.abi.EventEncoder;
-import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Event;
@@ -12,7 +11,6 @@ import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
-import org.web3j.protocol.core.RemoteCall;
 import org.web3j.protocol.core.RemoteFunctionCall;
 import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.BaseEventResponse;
@@ -39,62 +37,7 @@ import java.util.List;
  */
 @SuppressWarnings("rawtypes")
 public class HitpotBridge extends Contract {
-    public static final String BINARY = "// SPDX-License-Identifier: MIT\n"
-        + "pragma solidity ^0.8.9;\n"
-        + "\n"
-        + "import \"@openzeppelin/contracts/token/ERC20/IERC20.sol\";\n"
-        + "import \"@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol\";\n"
-        + "import \"@openzeppelin/contracts/utils/math/SafeMath.sol\";\n"
-        + "import \"@openzeppelin/contracts/access/Ownable.sol\";\n"
-        + "import \"hardhat/console.sol\";\n"
-        + "\n"
-        + "// 参考1 https://github.com/matter-labs/zksync/blob/master/contracts/contracts/ZkSync.sol\n"
-        + "// 参考2 https://github.com/matter-labs/zksync/blob/master/contracts/contracts/Verifier.sol\n"
-        + "// 参考3 https://github.com/matter-labs/zksync/blob/master/contracts/contracts/ReentrancyGuard.sol 可重入防护\n"
-        + "// https://github.com/dexDev/DEx.top/blob/master/smart-contract/dextop.sol\n"
-        + "// https://dodoex.github.io/docs/zh/docs/mining/\n"
-        + "// https://juejin.cn/post/7190940017316298809\n"
-        + "contract HitpotBridge is Ownable {\n"
-        + "    using SafeMath for uint256;\n"
-        + "    using SafeERC20 for IERC20;\n"
-        + "\n"
-        + "    address private potTokenAddress;\n"
-        + "    uint256 private priceOfHit = 0.0001 ether;\n"
-        + "    uint256 private balanceOfEth = 0;\n"
-        + "    mapping(address => uint256) userPotTokenBalance;\n"
-        + "    uint256 private index = 0;\n"
-        + "\n"
-        + "    constructor(address _potTokenAddress) Ownable() {\n"
-        + "        potTokenAddress = _potTokenAddress;\n"
-        + "    }\n"
-        + "\n"
-        + "    event depositEvent(address account, uint256 amount);\n"
-        + "    event withdrawEvent(address account, uint256);\n"
-        + "\n"
-        + "    // 使用ETH兑换POT\n"
-        + "    function exchange(uint256 amount) external payable {}\n"
-        + "\n"
-        + "    // 将POT充值到L2层: 充值金额由合约保管, 充值后L2层将充值金额记录到L2层\n"
-        + "    function deposit(uint256 amount) external {\n"
-        + "        require(IERC20(potTokenAddress).balanceOf(msg.sender) >= amount, \"Your token amount must be greater then you are trying to deposit\");\n"
-        + "        require(IERC20(potTokenAddress).allowance(msg.sender, address(this)) >= amount);\n"
-        + "        require(IERC20(potTokenAddress).transferFrom(msg.sender, address(this), amount));\n"
-        + "        userPotTokenBalance[msg.sender] = userPotTokenBalance[msg.sender].add(amount);\n"
-        + "        emit depositEvent(msg.sender, amount);\n"
-        + "    }\n"
-        + "\n"
-        + "    // 批量提交L2层的交易\n"
-        + "    // TODO 验证提交者，指定提交者才可进行rollup\n"
-        + "    function proveBlocks() external onlyOwner {}\n"
-        + "\n"
-        + "    // 从L2层提现POT(由L2层进行调用)\n"
-        + "    function withdraw(address account, uint256 amount) external onlyOwner {\n"
-        + "        require(userPotTokenBalance[account] >= amount);\n"
-        + "        require(IERC20(potTokenAddress).approve(account, amount), \"the transfer failed\");\n"
-        + "        userPotTokenBalance[account] = userPotTokenBalance[account].sub(amount);\n"
-        + "        emit withdrawEvent(account, amount);\n"
-        + "    }\n"
-        + "}\n";
+    public static final String BINARY = "Bin file was not provided";
 
     public static final String FUNC_DEPOSIT = "deposit";
 
@@ -110,15 +53,15 @@ public class HitpotBridge extends Contract {
 
     public static final String FUNC_WITHDRAW = "withdraw";
 
+    public static final Event DEPOSITEVENT_EVENT = new Event("DepositEvent",
+        Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}, new TypeReference<Uint256>() {}));
+    ;
+
     public static final Event OWNERSHIPTRANSFERRED_EVENT = new Event("OwnershipTransferred",
         Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) {}, new TypeReference<Address>(true) {}));
     ;
 
-    public static final Event DEPOSITEVENT_EVENT = new Event("depositEvent",
-        Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}, new TypeReference<Uint256>() {}));
-    ;
-
-    public static final Event WITHDRAWEVENT_EVENT = new Event("withdrawEvent",
+    public static final Event WITHDRAWEVENT_EVENT = new Event("WithdrawEvent",
         Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}, new TypeReference<Uint256>() {}));
     ;
 
@@ -138,39 +81,6 @@ public class HitpotBridge extends Contract {
 
     protected HitpotBridge(String contractAddress, Web3j web3j, TransactionManager transactionManager, ContractGasProvider contractGasProvider) {
         super(BINARY, contractAddress, web3j, transactionManager, contractGasProvider);
-    }
-
-    public static List<OwnershipTransferredEventResponse> getOwnershipTransferredEvents(TransactionReceipt transactionReceipt) {
-        List<Contract.EventValuesWithLog> valueList = staticExtractEventParametersWithLog(OWNERSHIPTRANSFERRED_EVENT, transactionReceipt);
-        ArrayList<OwnershipTransferredEventResponse> responses = new ArrayList<OwnershipTransferredEventResponse>(valueList.size());
-        for (Contract.EventValuesWithLog eventValues : valueList) {
-            OwnershipTransferredEventResponse typedResponse = new OwnershipTransferredEventResponse();
-            typedResponse.log = eventValues.getLog();
-            typedResponse.previousOwner = (String) eventValues.getIndexedValues().get(0).getValue();
-            typedResponse.newOwner = (String) eventValues.getIndexedValues().get(1).getValue();
-            responses.add(typedResponse);
-        }
-        return responses;
-    }
-
-    public Flowable<OwnershipTransferredEventResponse> ownershipTransferredEventFlowable(EthFilter filter) {
-        return web3j.ethLogFlowable(filter).map(new Function<Log, OwnershipTransferredEventResponse>() {
-            @Override
-            public OwnershipTransferredEventResponse apply(Log log) {
-                Contract.EventValuesWithLog eventValues = extractEventParametersWithLog(OWNERSHIPTRANSFERRED_EVENT, log);
-                OwnershipTransferredEventResponse typedResponse = new OwnershipTransferredEventResponse();
-                typedResponse.log = log;
-                typedResponse.previousOwner = (String) eventValues.getIndexedValues().get(0).getValue();
-                typedResponse.newOwner = (String) eventValues.getIndexedValues().get(1).getValue();
-                return typedResponse;
-            }
-        });
-    }
-
-    public Flowable<OwnershipTransferredEventResponse> ownershipTransferredEventFlowable(DefaultBlockParameter startBlock, DefaultBlockParameter endBlock) {
-        EthFilter filter = new EthFilter(startBlock, endBlock, getContractAddress());
-        filter.addSingleTopic(EventEncoder.encode(OWNERSHIPTRANSFERRED_EVENT));
-        return ownershipTransferredEventFlowable(filter);
     }
 
     public static List<DepositEventEventResponse> getDepositEventEvents(TransactionReceipt transactionReceipt) {
@@ -204,6 +114,39 @@ public class HitpotBridge extends Contract {
         EthFilter filter = new EthFilter(startBlock, endBlock, getContractAddress());
         filter.addSingleTopic(EventEncoder.encode(DEPOSITEVENT_EVENT));
         return depositEventEventFlowable(filter);
+    }
+
+    public static List<OwnershipTransferredEventResponse> getOwnershipTransferredEvents(TransactionReceipt transactionReceipt) {
+        List<Contract.EventValuesWithLog> valueList = staticExtractEventParametersWithLog(OWNERSHIPTRANSFERRED_EVENT, transactionReceipt);
+        ArrayList<OwnershipTransferredEventResponse> responses = new ArrayList<OwnershipTransferredEventResponse>(valueList.size());
+        for (Contract.EventValuesWithLog eventValues : valueList) {
+            OwnershipTransferredEventResponse typedResponse = new OwnershipTransferredEventResponse();
+            typedResponse.log = eventValues.getLog();
+            typedResponse.previousOwner = (String) eventValues.getIndexedValues().get(0).getValue();
+            typedResponse.newOwner = (String) eventValues.getIndexedValues().get(1).getValue();
+            responses.add(typedResponse);
+        }
+        return responses;
+    }
+
+    public Flowable<OwnershipTransferredEventResponse> ownershipTransferredEventFlowable(EthFilter filter) {
+        return web3j.ethLogFlowable(filter).map(new Function<Log, OwnershipTransferredEventResponse>() {
+            @Override
+            public OwnershipTransferredEventResponse apply(Log log) {
+                Contract.EventValuesWithLog eventValues = extractEventParametersWithLog(OWNERSHIPTRANSFERRED_EVENT, log);
+                OwnershipTransferredEventResponse typedResponse = new OwnershipTransferredEventResponse();
+                typedResponse.log = log;
+                typedResponse.previousOwner = (String) eventValues.getIndexedValues().get(0).getValue();
+                typedResponse.newOwner = (String) eventValues.getIndexedValues().get(1).getValue();
+                return typedResponse;
+            }
+        });
+    }
+
+    public Flowable<OwnershipTransferredEventResponse> ownershipTransferredEventFlowable(DefaultBlockParameter startBlock, DefaultBlockParameter endBlock) {
+        EthFilter filter = new EthFilter(startBlock, endBlock, getContractAddress());
+        filter.addSingleTopic(EventEncoder.encode(OWNERSHIPTRANSFERRED_EVENT));
+        return ownershipTransferredEventFlowable(filter);
     }
 
     public static List<WithdrawEventEventResponse> getWithdrawEventEvents(TransactionReceipt transactionReceipt) {
@@ -313,38 +256,16 @@ public class HitpotBridge extends Contract {
         return new HitpotBridge(contractAddress, web3j, transactionManager, contractGasProvider);
     }
 
-    public static RemoteCall<HitpotBridge> deploy(Web3j web3j, Credentials credentials, ContractGasProvider contractGasProvider, String _potTokenAddress) {
-        String encodedConstructor = FunctionEncoder.encodeConstructor(Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(160, _potTokenAddress)));
-        return deployRemoteCall(HitpotBridge.class, web3j, credentials, contractGasProvider, BINARY, encodedConstructor);
-    }
+    public static class DepositEventEventResponse extends BaseEventResponse {
+        public String account;
 
-    public static RemoteCall<HitpotBridge> deploy(Web3j web3j, TransactionManager transactionManager, ContractGasProvider contractGasProvider, String _potTokenAddress) {
-        String encodedConstructor = FunctionEncoder.encodeConstructor(Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(160, _potTokenAddress)));
-        return deployRemoteCall(HitpotBridge.class, web3j, transactionManager, contractGasProvider, BINARY, encodedConstructor);
-    }
-
-    @Deprecated
-    public static RemoteCall<HitpotBridge> deploy(Web3j web3j, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit, String _potTokenAddress) {
-        String encodedConstructor = FunctionEncoder.encodeConstructor(Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(160, _potTokenAddress)));
-        return deployRemoteCall(HitpotBridge.class, web3j, credentials, gasPrice, gasLimit, BINARY, encodedConstructor);
-    }
-
-    @Deprecated
-    public static RemoteCall<HitpotBridge> deploy(Web3j web3j, TransactionManager transactionManager, BigInteger gasPrice, BigInteger gasLimit, String _potTokenAddress) {
-        String encodedConstructor = FunctionEncoder.encodeConstructor(Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(160, _potTokenAddress)));
-        return deployRemoteCall(HitpotBridge.class, web3j, transactionManager, gasPrice, gasLimit, BINARY, encodedConstructor);
+        public BigInteger amount;
     }
 
     public static class OwnershipTransferredEventResponse extends BaseEventResponse {
         public String previousOwner;
 
         public String newOwner;
-    }
-
-    public static class DepositEventEventResponse extends BaseEventResponse {
-        public String account;
-
-        public BigInteger amount;
     }
 
     public static class WithdrawEventEventResponse extends BaseEventResponse {

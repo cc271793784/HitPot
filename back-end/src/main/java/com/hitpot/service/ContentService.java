@@ -7,11 +7,11 @@ import com.hitpot.common.PageUtils;
 import com.hitpot.common.exception.HitpotException;
 import com.hitpot.common.exception.HitpotExceptionEnum;
 import com.hitpot.domain.*;
+import com.hitpot.domain.*;
 import com.hitpot.enums.LevelType;
 import com.hitpot.repo.*;
 import com.hitpot.service.vo.*;
 import com.hitpot.web.controller.req.*;
-import com.hitpot.domain.*;
 import com.hitpot.repo.*;
 import com.hitpot.service.vo.*;
 import com.hitpot.web.controller.req.*;
@@ -332,7 +332,7 @@ public class ContentService {
         }
 
         QContent qContent = QContent.content;
-        BooleanExpression queryExpression = qContent.watcherLevel.in(levels);
+        BooleanExpression queryExpression = qContent.watcherLevel.in(levels).and(qContent.duration.loe(getWatchableDurationByUser(user) * 1000));
         Page<Content> pagination = contentRepository.findAll(queryExpression, pageRequest);
         Page<ContentVO> paginationVO = pagination.map(content -> buildContent(userId, content));
         return PageUtils.buildContentVOPageChunk(paginationVO);

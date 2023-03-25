@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
 @Configuration
 @Order()
 public class SaTokenWebMvcConfigurer implements WebMvcConfigurer {
@@ -29,9 +28,21 @@ public class SaTokenWebMvcConfigurer implements WebMvcConfigurer {
                 "/api/user/login",
                 "/api/content/page-content-by-level",
                 "/api/content/list-most-popular-content",
+                "/api/wallet/price-of-hit",
                 "/inner/health",
                 "/v3/api-docs",
-                "/swagger-ui/**"
+                "/v3/api-docs/",
+                "/v3/api-docs/*",
+                "/v3/api-docs/**",
+                "/swagger-ui/index.html",
+                "/swagger-ui",
+                "/swagger-ui/",
+                "/swagger-ui/*",
+                "/swagger-ui/**",
+                "/swagger-resources",
+                "/swagger-resources/",
+                "/swagger-resources/*",
+                "/swagger-resources/**"
             );
     }
 }

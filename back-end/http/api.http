@@ -66,6 +66,11 @@ GET {{host}}/api/wallet
 Content-Type: application/json
 Authorization: {{accessToken}}
 
+### hit单价
+GET {{host}}/api/wallet/price-of-hit
+Content-Type: application/json
+Authorization: {{accessToken}}
+
 ### 发布视频
 POST {{host}}/api/content/release
 Content-Type: application/json

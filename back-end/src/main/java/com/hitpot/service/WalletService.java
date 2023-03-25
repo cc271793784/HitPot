@@ -8,11 +8,11 @@ import com.hitpot.domain.*;
 import com.hitpot.enums.*;
 import com.hitpot.repo.*;
 import com.hitpot.service.vo.*;
+import com.hitpot.domain.*;
 import com.hitpot.web.controller.req.ContentCollectForm;
 import com.hitpot.web.controller.req.ContentPurchaseNftForm;
 import com.hitpot.web.controller.req.ExchangeHitForm;
 import com.hitpot.web.controller.req.WatchForm;
-import com.hitpot.domain.*;
 import com.hitpot.enums.*;
 import com.hitpot.repo.*;
 import com.hitpot.service.vo.*;
@@ -342,10 +342,19 @@ public class WalletService {
 
     public HitPriceVO getPriceOfHit() {
         LocalDateTime startTime = getStartTimeOfPrice();
+
+        String hitLeftAmountRedisKey = REDIS_KEY_LEFT_HIT_PREFIX + ":" + DateUtils.DATE_TIME_HOUR_FORMATTER.format(startTime);
+        String hitLeftStr = stringRedisTemplate.opsForValue().get(hitLeftAmountRedisKey);
+        long hitLeft = TOTAL_HIT_FOR_PER_HOUR;
+        if (hitLeftStr != null && StrUtil.isNotBlank(hitLeftStr)) {
+            hitLeft = Long.parseLong(hitLeftStr.trim());
+        }
+
         return HitPriceVO.builder()
             .startTime(Date.from(startTime.atZone(ZoneId.systemDefault()).toInstant()))
             .endTime(Date.from(startTime.plusSeconds(5).atZone(ZoneId.systemDefault()).toInstant()))
             .price(convertToEtherFromMwei(getHitPrice()))
+            .amountHitLeft(convertToEtherFromMwei(hitLeft))
             .build();
     }
 
