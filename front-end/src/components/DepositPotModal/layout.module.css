@@ -1,0 +1,20 @@
+.depositPotModal {
+  width: 400px;
+}
+
+.depositPotFormWrap {
+  width: 100%;
+  padding: 24px 5px;
+}
+
+.inputDepositPotTitle {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 150%;
+  color: #212529;
+}
+
+.confirmDepositButton {
+  margin-top: 30px;
+}

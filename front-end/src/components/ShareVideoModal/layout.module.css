@@ -1,0 +1,21 @@
+.shareModal {
+  width: 500px;
+}
+
+.shareModalBodyContentWrap {
+  padding: 24px 30px;
+}
+
+.logo {
+  cursor: pointer;
+}
+
+.logoTitle {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 150%;
+  color: #212529;
+  margin-top: 10px;
+  white-space: nowrap;
+}

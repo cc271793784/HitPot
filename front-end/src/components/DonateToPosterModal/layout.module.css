@@ -1,0 +1,37 @@
+.donateToPosterModal {
+  width: 400px;
+}
+
+.modalBodyContentWrap {
+  padding: 24px 5px;
+}
+
+.posterInfo {
+  margin-left: 12px;
+}
+
+.avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.nickname {
+  margin-left: 8px;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 120%;
+  color: #6c757d;
+  display: inline-block;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.donateFormWrap {
+}
+
+.donateButton {
+  margin-top: 35px;
+}

@@ -1,0 +1,18 @@
+.wrap {
+}
+
+.tokens {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 120%;
+  color: #6c757d;
+}
+
+.tokenType {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 150%;
+  color: #6c757d;
+}

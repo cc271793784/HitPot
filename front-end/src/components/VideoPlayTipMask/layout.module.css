@@ -1,0 +1,36 @@
+.playTip {
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6));
+}
+
+.playIcon {
+  width: 72px;
+  height: 72px;
+  font-size: 72px;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.mintTip {
+  font-style: normal;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 150%;
+  text-transform: uppercase;
+  color: #f8f9fa;
+  margin-top: 12px;
+}
+
+.hitCount {
+  color: #f8f9fa;
+}
+
+.rewards {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 150%;
+  color: #adb5bd;
+}

@@ -1,0 +1,14 @@
+.wrap {
+  width: 684px;
+  margin: 0 auto;
+  padding: 33px 0;
+}
+
+.navbar {
+}
+
+.videoList {
+  width: 100%;
+  padding: 25px 0;
+  gap: 25px;
+}

@@ -1,0 +1,52 @@
+.wrap {
+  width: 684px;
+  margin: 0 auto;
+  padding: 33px 0;
+}
+
+.title {
+  margin-bottom: 0;
+}
+
+.address {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 150%;
+  color: #6c757d;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.potBalance {
+  margin-top: 25px;
+}
+
+.potCount {
+  margin-top: 16px;
+  margin-bottom: 0;
+}
+
+.potWalletButtons {
+  margin-top: 24px;
+}
+
+.nftBalance {
+  margin-top: 25px;
+}
+
+.nftVideoList {
+  gap: 11px;
+}
+
+.nftVideoItem {
+  gap: 16px;
+}
+
+.videoPoster {
+  object-fit: cover;
+}
+
+.nftCount {
+  max-width: 200px;
+}

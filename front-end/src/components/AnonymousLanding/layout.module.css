@@ -1,0 +1,106 @@
+.wrap {
+}
+
+.logo {
+  margin-top: 87px;
+  object-fit: contain;
+}
+
+.welcome {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 32px;
+  line-height: 120%;
+  color: #212529;
+  margin-top: 24px;
+  margin-bottom: 0;
+}
+
+.intro {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 150%;
+  color: #6c757d;
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+
+.videoCardsWrap {
+  margin-top: 33px;
+  gap: 24px;
+  margin-bottom: 160px;
+}
+
+.videoCard {
+  box-sizing: content-box;
+  width: 341px;
+  height: 432px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.175);
+  border-radius: 4px;
+}
+
+.videoPoster {
+  border: none;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.videoDuration {
+  padding: 4px 7px;
+  background: rgba(0, 0, 0, 0.65);
+  border-radius: 4px;
+  font-style: normal;
+  font-size: 12px;
+  line-height: 100%;
+  color: #ffffff;
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+}
+
+.videoInfoWrap {
+  padding: 16px;
+}
+
+.videoTitle {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 120%;
+  display: flex;
+  align-items: center;
+  color: #212529;
+}
+
+.videoUploader {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 120%;
+  display: flex;
+  align-items: center;
+  color: #6c757d;
+  margin-top: 8px;
+}
+
+.videoIntro {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 150%;
+  color: #212529;
+  margin-top: 8px;
+  word-break: break-all;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+}
+
+.operateButtons {
+  margin-top: 16px;
+}

@@ -1,0 +1,236 @@
+.wrap {
+  width: 684px;
+  padding: 33px 0 200px 0;
+  margin: 0 auto;
+}
+
+.pageTitle {
+}
+
+.formItemTitle {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 150%;
+  color: #212529;
+}
+
+.uploadVideoWrap {
+  width: 684px;
+  height: 367px;
+}
+
+.uploadVideoClickTip {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 150%;
+  text-align: center;
+  color: #212529;
+  margin-top: 20px;
+}
+
+.uploadVideoFileLimit {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 150%;
+  text-align: center;
+  color: #6c757d;
+  margin-top: 4px;
+}
+
+.uploadingVideoWrap,
+.uploadedVideoWrap {
+  width: 684px;
+  height: 367px;
+  position: relative;
+}
+
+.videoPreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.uploadingVideoTip,
+.uploadedVideoTip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid #adb5bd;
+  border-radius: 8px;
+}
+
+.videoFileName {
+  font-style: normal;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 150%;
+  color: #f8f9fa;
+  margin-top: 15px;
+  display: inline-block;
+  max-width: 500px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.videoFileSize {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 150%;
+  color: #f8f9fa;
+  margin-top: 8px;
+}
+
+.uploadedVideoWrap {
+  cursor: pointer;
+}
+
+.uploadThumbnailWrap {
+  margin-top: 40px;
+}
+
+.uploadThumbnail {
+  width: 480px;
+  height: 272px;
+  position: relative;
+}
+
+.uploadThumbnailIcon {
+}
+
+.uploadThumbnailClickTip {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 150%;
+  text-align: center;
+  color: #212529;
+  margin-top: 20px;
+}
+
+.uploadThumbnailFileLimit {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 150%;
+  text-align: center;
+  color: #6c757d;
+  margin-top: 4px;
+}
+
+.uploadingThumbnailWrap,
+.uploadedThumbnailWrap {
+  width: 480px;
+  height: 272px;
+  position: relative;
+}
+
+.uploadedThumbnailWrap {
+  cursor: pointer;
+}
+
+.thumbnailPreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.uploadingThumbnailTip,
+.uploadedThumbnailTip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid #adb5bd;
+  border-radius: 8px;
+}
+
+.thumbnailFileName {
+  font-style: normal;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 150%;
+  color: #f8f9fa;
+  margin-top: 15px;
+  display: inline-block;
+  max-width: 400px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.thumbnailFileSize {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 150%;
+  color: #f8f9fa;
+  margin-top: 8px;
+}
+
+.inputTitle {
+  width: 356px;
+}
+
+.inputDescription {
+  width: 356px;
+}
+
+.inputMintingSupply {
+  width: 356px;
+}
+
+.balanceHit {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 150%;
+  color: #6c757d;
+}
+
+.rewardForInfluencerSharingWrap {
+  margin-top: 40px;
+}
+
+.selectRewardForInfluencerSharing {
+  width: 356px;
+}
+
+.selectRewardForViewer {
+  width: 356px;
+}
+
+.enableIPNFTWrap {
+  margin-top: 40px;
+}
+
+.inputIPNFTSupply {
+  width: 356px;
+}
+
+.inputIPNFTFloorPrice {
+  width: 356px;
+}
+
+.selectIPNFTReservedForInvestor {
+  width: 356px;
+}
+
+.inputIPNFTMaximumVolumeForInvestor {
+  width: 356px;
+}
+
+.postButton {
+  margin-top: 40px;
+}

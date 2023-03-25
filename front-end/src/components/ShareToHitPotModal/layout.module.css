@@ -1,0 +1,62 @@
+.shareToHitPotModal {
+  max-width: 634px;
+  width: 634px;
+}
+
+.videoInfoWrap {
+  padding: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.175);
+  border-radius: 4px;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.videoPoster {
+  width: 240px;
+  height: 135px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.videoIntro {
+  gap: 8px;
+}
+
+.videoTitle {
+  word-break: break-all;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+}
+
+.videoPosterName {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 120%;
+  color: #6c757d;
+  word-break: break-all;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+}
+
+.videoDescription {
+  word-break: break-all;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+}
+
+.shareButton {
+  margin-top: 36px;
+}

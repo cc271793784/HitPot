@@ -1,0 +1,39 @@
+.wrap {
+  width: 684px;
+  margin: 0 auto;
+  padding: 33px 0;
+}
+
+.accountInfo {
+}
+
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.nickname {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 120%;
+  color: #212529;
+}
+
+.address {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 150%;
+  color: #6c757d;
+}
+
+.navbar {
+  margin-top: 24px;
+}
+
+.videoList {
+  width: 100%;
+  gap: 25px;
+  margin-top: 25px;
+}

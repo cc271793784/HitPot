@@ -1,0 +1,23 @@
+.avatar {
+  border-radius: 50%;
+}
+
+.eventDetailWrap {
+  margin-left: 12px;
+}
+
+.content {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 150%;
+  color: #495057;
+}
+
+.time {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 150%;
+  color: #6c757d;
+}

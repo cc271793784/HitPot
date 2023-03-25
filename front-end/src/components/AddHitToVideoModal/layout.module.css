@@ -1,0 +1,19 @@
+.addHitToVideoModal {
+  width: 400px;
+}
+
+.modalBodyContentWrap {
+  padding: 12px 5px;
+}
+
+.balanceHit {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 150%;
+  color: #6c757d;
+}
+
+.addHitButton {
+  margin-top: 35px;
+}

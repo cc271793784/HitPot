@@ -1,0 +1,33 @@
+.purchaseHitModal {
+  width: 400px;
+}
+
+.hitCountInBalance {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 150%;
+  color: #6c757d;
+  margin-top: 8px;
+}
+
+.purchaseHitBodyWrap {
+  width: 100%;
+  padding: 24px 5px;
+}
+
+.purchaseHitInputWrap {
+  width: 100%;
+}
+
+.inputTitle {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 150%;
+  color: #212529;
+}
+
+.purchaseButton {
+  margin-top: 28px;
+}

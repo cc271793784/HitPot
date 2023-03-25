@@ -1,0 +1,37 @@
+.wrap {
+  width: 856px;
+  margin: 0 auto;
+  padding: 33px 0 100px 0;
+}
+
+.videoPlayerContainer {
+  width: 856px;
+  height: 482px;
+  background-color: bisque;
+}
+
+.videoTitle {
+}
+
+.uploaderInfo {
+}
+
+.uploaderAvatar {
+  border-radius: 50%;
+}
+
+.uploaderName {
+  max-width: 380px;
+}
+
+.subscribeButton {
+  padding: 6px 12px;
+}
+
+.videoIntro {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 150%;
+  color: #212529;
+}

@@ -1,0 +1,44 @@
+.buyHitModal {
+  width: 400px;
+}
+
+.buyHitFormWrap {
+  width: 100%;
+  padding: 24px 5px;
+}
+
+.inputHitCountTitle,
+.inputHitPriceTitle {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 150%;
+  color: #212529;
+}
+
+.latestHitPrice {
+  width: 100%;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 150%;
+  color: #6c757d;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.totalPriceNumber {
+  display: inline-block;
+  max-width: 160px;
+  white-space: nowrap;
+  word-break: break-all;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.buyHitTotalPrice {
+  white-space: pre;
+}
+
+.confirmBuyHitButton {
+}

@@ -1,0 +1,33 @@
+.wrap {
+}
+
+.floorPriceTitle {
+  font-style: normal;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 150%;
+  text-transform: uppercase;
+  color: #6c757d;
+}
+
+.floorPrice {
+}
+
+.volumeWrap {
+}
+
+.volumeTitle {
+  font-style: normal;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 150%;
+  text-transform: uppercase;
+  color: #6c757d;
+}
+
+.restVolume {
+}
+
+.totalVolume {
+  color: #adb5bd;
+}

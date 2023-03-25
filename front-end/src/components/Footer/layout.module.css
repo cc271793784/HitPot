@@ -1,0 +1,35 @@
+.footerWrap {
+  background-color: #712cf9;
+  padding: 0 82px;
+  width: 100%;
+}
+
+.footerMain {
+  max-width: 1440px;
+  padding: 70px 82px;
+}
+
+.copyright {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 150%;
+  color: #f8f9fa;
+  margin-top: 6px;
+}
+
+.links {
+  gap: 24px;
+}
+
+.linkItem {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 150%;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+}
+.linkItem:hover {
+  color: #fff;
+}
