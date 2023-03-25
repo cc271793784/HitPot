@@ -1,0 +1,123 @@
+### 获取随机值nonce
+GET {{host}}/api/user/gen-nonce?walletAddress={{walletAddress}}
+Content-Type: application/json
+
+### 使用签名进行登录
+POST {{host}}/api/user/login
+Content-Type: application/json
+
+{
+  "walletAddress": "{{walletAddress}}",
+  "signature": "0x0bce4a754eb8651b2f1613c1ea9f3cd6523696b4e9f44e93d2ef58bd508e6cef6e5a4158cf2c1d91da8b467e4ccd2a0e5a57b745bcfa8c3516c8c9b7e43ee00e1b"
+}
+
+### 更新用户的等级
+POST {{host}}/api/user/upgrade-level
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "level": 2
+}
+
+### 获取用户详情
+GET {{host}}/api/user/detail
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+### 上传文件jpg
+POST {{host}}/api/material/upload?materialType=1
+Authorization: {{accessToken}}
+Cache-Control: no-cache
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="20220223-161039-1.jpg"
+
+< /Users/wangjunpeng/Downloads/20220223-161039-1.jpg
+--WebAppBoundary--
+
+### 上传文件video
+POST {{host}}/api/material/upload?materialType=0
+Authorization: {{accessToken}}
+Cache-Control: no-cache
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="飞书20221102-163411.mp4"
+
+< /Users/wangjunpeng/Downloads/飞书20221102-163411.mp4
+--WebAppBoundary--
+
+### 上传视频文件
+POST {{host}}/api/material/upload?materialType=0
+Authorization: {{accessToken}}
+Cache-Control: no-cache
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="20220223-161039-1.jpg"
+
+< /Users/wangjunpeng/Downloads/20220223-161039-1.jpg
+--WebAppBoundary--
+
+### 我的钱包详情
+GET {{host}}/api/wallet
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+### 发布视频
+POST {{host}}/api/content/release
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "coverImg": "image/77844e23edcd4a55af7a8e5b7a7edf22.jpg",
+  "videoFilename": "video/06147cf52a394a4a9324790ee65705d1.mp4",
+  "title": "titl",
+  "description": "descri",
+  "watchLevel": 1,
+  "countIpNft": 100,
+  "priceIpNft": 20,
+  "enabledIpNft": true,
+  "ipNftRatioForInvestor": 0.8,
+  "maxCountIpNftForPerInvestor": 10,
+  "yieldRateOfInfluencer": 0.3,
+  "yieldRateOfViewer": 0.3,
+  "amountHit": 10
+}
+
+### 我赞过的视频
+GET {{host}}/api/content/page-content-by-liked?pageSize=20&pageNo=1
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+### 根据用户等级查询视频
+GET {{host}}/api/content/page-content-by-level
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+### 点赞视频
+POST {{host}}/api/content/like
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "contentId": 1
+}
+
+
+### xieshuai使用签名进行登录
+POST {{host}}/api/user/login
+Content-Type: application/json
+
+{
+  "walletAddress": "0xbe2f17ae0f50bded34e952226c8afceaf9b718a2",
+  "message": "Welcome to HitPot!\n\nClick to sign in and accept the HitPot Terms of Service.\n\nThis request will not trigger a blockchain transaction or cost any gas fees.\n\nWallet address:\n0xbe2f17ae0f50bded34e952226c8afceaf9b718a2\n\nNonce:\nTH2QirA3fbrR2ICgoK-Qz",
+  "signature": "0x11cb9771c5146b9bfe92eba1d9dfdb087cfe1828ed78fd123313c390663b09da49624b93446ffe31e5d97686343869170ddbf561304cc32c148787ebc1b78ab21c"
+}
+
+### 获取用户详情
+GET {{host}}/api/user/detail
+Content-Type: application/json
+Authorization: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJsb2dpblR5cGUiOiJsb2dpbiIsImxvZ2luSWQiOiIweGJlMmYxN2FlMGY1MGJkZWQzNGU5NTIyMjZjOGFmY2VhZjliNzE4YTIiLCJkZXZpY2UiOiJkZWZhdWx0LWRldmljZSIsImVmZiI6MTY4MDQyNjI2MTUxOSwicm5TdHIiOiJMSmhRaDY0T1g5RUtta014RUdPNG9uQlFOT2xBWkI2MCJ9.COAtXkGDejQRgsFD-vXVXhQLEvVCl8a0YhTqjYIcIYk
