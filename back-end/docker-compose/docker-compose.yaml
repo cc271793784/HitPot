@@ -21,7 +21,7 @@ services:
       - hitpot-mysql
       - hitpot-redis
     ports:
-      - "8080:8080"
+      - "18080:8080"
 
   hitpot-mysql:
     image: mysql:5.7.41-debian
@@ -30,10 +30,11 @@ services:
     platform: linux/amd64
     volumes:
       - ./mysqldata:/var/lib/mysql
+      - ../sql/init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       MYSQL_ROOT_PASSWORD: example
     ports:
-      - "3306:3306"
+      - "13306:3306"
 
   hitpot-redis:
     image: 'redis:alpine'
@@ -57,4 +58,4 @@ services:
       - hitpot-front-end
       - hitpot-back-end
     ports:
-      - "80:80"
+      - "18000:80"

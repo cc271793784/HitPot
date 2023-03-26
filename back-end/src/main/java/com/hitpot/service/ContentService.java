@@ -8,11 +8,7 @@ import com.hitpot.common.PageUtils;
 import com.hitpot.common.exception.HitpotException;
 import com.hitpot.common.exception.HitpotExceptionEnum;
 import com.hitpot.domain.*;
-import com.hitpot.domain.*;
 import com.hitpot.enums.LevelType;
-import com.hitpot.repo.*;
-import com.hitpot.service.vo.*;
-import com.hitpot.web.controller.req.*;
 import com.hitpot.repo.*;
 import com.hitpot.service.vo.*;
 import com.hitpot.web.controller.req.*;
@@ -351,9 +347,11 @@ public class ContentService {
         User user = userService.getUserByUserId(userId);
         List<Integer> levels = Arrays.asList(LevelType.NONE.getId(), LevelType.SILVER.getId(), LevelType.GOLD.getId());
         if (LevelType.SILVER.getId() == user.getLevel().intValue()) {
-            levels = Arrays.asList(LevelType.SILVER.getId(), LevelType.GOLD.getId());
+            levels = Arrays.asList(LevelType.NONE.getId(), LevelType.SILVER.getId());
         } else if (LevelType.GOLD.getId() == user.getLevel().intValue()) {
-            levels = Arrays.asList(LevelType.GOLD.getId());
+            levels = Arrays.asList(LevelType.NONE.getId(), LevelType.SILVER.getId(), LevelType.GOLD.getId());
+        } else if (LevelType.NONE.getId() == user.getLevel().intValue()) {
+            levels = Arrays.asList(LevelType.NONE.getId());
         }
 
         QContent qContent = QContent.content;

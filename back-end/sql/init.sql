@@ -1,3 +1,5 @@
+create database hitpot character set utf8mb4;
+
 -- 基础功能 ----------
 -- user
 create table user (
