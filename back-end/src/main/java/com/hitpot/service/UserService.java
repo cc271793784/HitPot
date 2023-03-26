@@ -76,14 +76,6 @@ public class UserService {
 
         String walletAddress = loginForm.getWalletAddress().trim().toLowerCase();
 
-        // String key = KEY_LOGIN_USER_PREFIX + walletAddress;
-        // String loginNonceVOJson = stringRedisTemplate.opsForValue().get(key);
-        // LoginNonceVO loginNonceVO = JSON.parseObject(loginNonceVOJson, LoginNonceVO.class);
-        // if (StrUtil.isBlank(loginNonceVOJson)) {
-        //     // 如果登录随机码为null, 则返回错误
-        //     throw new HitpotException(HitpotExceptionEnum.LOGIN_NONCE_IS_NULL);
-        // }
-
         User user = userRepository.findFirstByUserId(walletAddress);
         if (user == null) {
             // 如果用户不存在，则创建用户

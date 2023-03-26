@@ -44,3 +44,8 @@ bin/
 /logs
 blockchain.properties
 .idea
+
+docker-compose/mysqldata
+docker-compose/upload
+
+docker-compose-prod

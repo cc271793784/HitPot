@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  hitpot-back-end:
+    image: usydapeng/ts-hitpot-server:0.0.1.37
+    container_name: 'hitpot-back-end'
+    platform: linux/amd64
+    volumes:
+      - ./upload:/ts-hitpot-server/upload
+    environment:
+      BLOCKCHAIN_PRIVATE_KEY: 'fecd8a9c9eb1a4c5b51df0c4ed1b2325358797168c5cfcbe46d97237c1247706'
+      SPRING_PROFILE: okx
+      JVM_MAX_MEMORY: 500M
+      TZ: America/Los_Angeles
+      SPRING_DATASOURCE_URL: jdbc:mysql://hitpot-mysql:3306/hitpot?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=America/Los_Angeles
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: example
+      SPRING_REDIS_HOST: hitpot-redis
+      MATERIAL_BASEURL: /static/
+    depends_on:
+      - hitpot-mysql
+      - hitpot-redis
+    ports:
+      - "8080:8080"
+
+  hitpot-mysql:
+    image: mysql:5.7.41-debian
+    container_name: 'hitpot-mysql'
+    command: --default-authentication-plugin=mysql_native_password
+    platform: linux/amd64
+    volumes:
+      - ./mysqldata:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+    ports:
+      - "3306:3306"
+
+  hitpot-redis:
+    image: 'redis:alpine'
+    platform: linux/amd64
+    container_name: 'hitpot-redis'
+
+  hitpot-front-end:
+    image: sqxieshuai/hitpot-fe:v9
+    platform: linux/amd64
+    container_name: hitpot-front-end
+    volumes:
+      - ./upload:/ts-hitpot-fe/upload
+
+  hitpot-nginx:
+    image: nginx:1.22.1
+    container_name: 'hitpot-nginx'
+    platform: linux/amd64
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - hitpot-front-end
+      - hitpot-back-end
+    ports:
+      - "80:80"
