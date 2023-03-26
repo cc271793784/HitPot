@@ -19,6 +19,8 @@ public class TimelineVO {
     private Long contentTimelineId;
     @ApiModelProperty("视频详细信息")
     private ContentVO content;
+    @ApiModelProperty("分享者信息")
+    private UserVO user;
     @ApiModelProperty("分享评论")
     private String comment;
     @ApiModelProperty("评论时间")

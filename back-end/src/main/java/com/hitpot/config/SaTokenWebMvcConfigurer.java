@@ -30,6 +30,7 @@ public class SaTokenWebMvcConfigurer implements WebMvcConfigurer {
                 "/api/content/page-content-by-level",
                 "/api/content/list-most-popular-content",
                 "/api/wallet/price-of-hit",
+                "/api/wallet/faucet",
                 "/inner/health",
                 "/v3/api-docs",
                 "/v3/api-docs/",

@@ -2,8 +2,6 @@ package com.hitpot.service;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson2.JSON;
-import com.google.common.collect.Lists;
 import com.hitpot.common.DateUtils;
 import com.hitpot.common.SignatureUtils;
 import com.hitpot.common.exception.HitpotException;
@@ -23,6 +21,8 @@ import com.hitpot.service.vo.UserVO;
 import com.hitpot.web.controller.req.LoginForm;
 import com.hitpot.web.controller.req.SubscribeCheckForm;
 import com.hitpot.web.controller.req.UserForm;
+import com.alibaba.fastjson2.JSON;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -75,6 +75,14 @@ public class UserService {
         }
 
         String walletAddress = loginForm.getWalletAddress().trim().toLowerCase();
+
+        // String key = KEY_LOGIN_USER_PREFIX + walletAddress;
+        // String loginNonceVOJson = stringRedisTemplate.opsForValue().get(key);
+        // LoginNonceVO loginNonceVO = JSON.parseObject(loginNonceVOJson, LoginNonceVO.class);
+        // if (StrUtil.isBlank(loginNonceVOJson)) {
+        //     // 如果登录随机码为null, 则返回错误
+        //     throw new HitpotException(HitpotExceptionEnum.LOGIN_NONCE_IS_NULL);
+        // }
 
         User user = userRepository.findFirstByUserId(walletAddress);
         if (user == null) {

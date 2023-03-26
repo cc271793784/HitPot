@@ -117,6 +117,10 @@ Authorization: {{accessToken}}
   "contentId": 1
 }
 
+### 可投资的视频
+GET {{host}}/api/content/page-content-by-stocking
+Content-Type: application/json
+Authorization: {{accessToken}}
 
 ### xieshuai使用签名进行登录
 POST {{host}}/api/user/login
@@ -167,7 +171,7 @@ Content-Type: application/json
 Authorization: {{accessToken}}
 
 {
-  "amountPot": 10
+  "amountPot": 1
 }
 
 
@@ -228,3 +232,17 @@ Authorization: {{accessToken}}
   "creatorId": ["0x3af605ec533ef13cff525c92ccad8608c58ad42e"]
 }
 
+### 获取我订阅的作者动态
+GET {{host}}/api/content/page-content-by-subscribe
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+
+### 获取pot
+POST {{host}}/api/wallet/faucet
+Content-Type: application/json
+
+{
+  "address": "0xC5aAEa1eE7683488A26e5990c0Be78FB803109c3",
+  "amount": 100
+}

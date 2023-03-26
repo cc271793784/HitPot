@@ -14,3 +14,12 @@ material:
     saveDir: /ts-hitpot-server/upload
   baseUrl: /static/
   ffmpeg_command: "/usr/bin/ffmpeg"
+
+blockchain:
+  server: https://exchaintestrpc.okex.org
+  chain_id: 65
+  total_hit_for_per_hour: 1000000000000
+  price_of_hit: 20000
+  contract:
+    hitpot_bridage_address: "0xd2413974239c9134A7dd6724B83783983f7DAa5c"
+    pot_token_address: "0xe2B933a8051a3e4926Ba4ffa403fFaFec210c598"

@@ -34,6 +34,12 @@ public class BlockchainConfig {
         return Web3j.build(new HttpService(server));
     }
 
+    @Bean("publicKey")
+    public String publicKey() {
+        Credentials credentials = Credentials.create(privateKey);
+        return credentials.getAddress();
+    }
+
     @Bean
     public FastRawTransactionManager fastRawTransactionManager(Web3j web3j) {
         Credentials credentials = Credentials.create(privateKey);

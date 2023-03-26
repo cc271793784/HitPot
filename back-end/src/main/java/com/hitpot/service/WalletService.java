@@ -10,14 +10,12 @@ import com.hitpot.domain.*;
 import com.hitpot.enums.*;
 import com.hitpot.repo.*;
 import com.hitpot.service.vo.*;
+import com.hitpot.web.controller.req.*;
 import com.hitpot.domain.*;
 import com.hitpot.enums.*;
 import com.hitpot.repo.*;
-import com.hitpot.web.controller.req.ContentCollectForm;
-import com.hitpot.web.controller.req.ContentPurchaseNftForm;
-import com.hitpot.web.controller.req.ExchangeHitForm;
-import com.hitpot.web.controller.req.WatchForm;
 import com.hitpot.service.vo.*;
+import com.hitpot.web.controller.req.*;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -477,6 +475,14 @@ public class WalletService {
             .collect(Collectors.toList());
 
         return ContentHitLeftVO.builder().amountHit(convertToEtherFromSzabo(amountHitLeft)).contentId(contentId).ads(ads).build();
+    }
+
+    /**
+     * 水龙头领取pot
+     */
+    public boolean potFaucet(FaucetForm faucetForm) {
+        blockchainService.potFaucet(faucetForm.getAddress(), convertToSzaboFromEther(faucetForm.getAmount()));
+        return true;
     }
 
     /**

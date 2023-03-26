@@ -99,7 +99,7 @@ public class ContentController {
     @ApiOperation("获取我上传的视频列表")
     public RestResult<PageChunk<ContentVO>> listMyContent(
         @ApiParam("每页条目数") @RequestParam(defaultValue = "20", required = false) Integer pageSize,
-        @ApiParam("页数") @RequestParam(defaultValue = "20", required = false) Integer pageNo
+        @ApiParam("页数") @RequestParam(defaultValue = "1", required = false) Integer pageNo
     ) {
         String userId = StpUtil.getLoginIdAsString();
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, Sort.by("id").descending());
@@ -123,7 +123,7 @@ public class ContentController {
     @ApiOperation("获取我订阅的视频列表")
     public RestResult<PageChunk<TimelineVO>> listContentBySubscribe(
         @ApiParam("每页条目数") @RequestParam(defaultValue = "20", required = false) Integer pageSize,
-        @ApiParam("页数") @RequestParam(defaultValue = "20", required = false) Integer pageNo
+        @ApiParam("页数") @RequestParam(defaultValue = "1", required = false) Integer pageNo
     ) {
         String userId = StpUtil.getLoginIdAsString();
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize , Sort.by("id").descending());
@@ -135,7 +135,7 @@ public class ContentController {
     @ApiOperation("获取我看过的视频列表")
     public RestResult<PageChunk<ContentVO>> listContentByWatched(
         @ApiParam("每页条目数") @RequestParam(defaultValue = "20", required = false) Integer pageSize,
-        @ApiParam("页数") @RequestParam(defaultValue = "20", required = false) Integer pageNo
+        @ApiParam("页数") @RequestParam(defaultValue = "1", required = false) Integer pageNo
     ) {
         String userId = StpUtil.getLoginIdAsString();
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize , Sort.by("id").descending());
@@ -147,7 +147,7 @@ public class ContentController {
     @ApiOperation("获取我投资的视频列表")
     public RestResult<PageChunk<ContentVO>> listContentByStock(
         @ApiParam("每页条目数") @RequestParam(defaultValue = "20", required = false) Integer pageSize,
-        @ApiParam("页数") @RequestParam(defaultValue = "20", required = false) Integer pageNo
+        @ApiParam("页数") @RequestParam(defaultValue = "1", required = false) Integer pageNo
     ) {
         String userId = StpUtil.getLoginIdAsString();
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize , Sort.by("id").descending());
@@ -159,7 +159,7 @@ public class ContentController {
     @ApiOperation("获取我分享过的视频列表")
     public RestResult<PageChunk<ContentVO>> listContentByShared(
         @ApiParam("每页条目数") @RequestParam(defaultValue = "20", required = false) Integer pageSize,
-        @ApiParam("页数") @RequestParam(defaultValue = "20", required = false) Integer pageNo
+        @ApiParam("页数") @RequestParam(defaultValue = "1", required = false) Integer pageNo
     ) {
         String userId = StpUtil.getLoginIdAsString();
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize , Sort.by("id").descending());
@@ -171,7 +171,7 @@ public class ContentController {
     @ApiOperation("获取我赞过的视频列表")
     public RestResult<PageChunk<ContentVO>> listContentByLiked(
         @ApiParam("每页条目数") @RequestParam(defaultValue = "20", required = false) Integer pageSize,
-        @ApiParam("页数") @RequestParam(defaultValue = "20", required = false) Integer pageNo
+        @ApiParam("页数") @RequestParam(defaultValue = "1", required = false) Integer pageNo
     ) {
         String userId = StpUtil.getLoginIdAsString();
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize , Sort.by("id").descending());
@@ -183,7 +183,7 @@ public class ContentController {
     @ApiOperation("获取我收藏的视频列表")
     public RestResult<PageChunk<ContentVO>> listContentByMarked(
         @ApiParam("每页条目数") @RequestParam(defaultValue = "20", required = false) Integer pageSize,
-        @ApiParam("页数") @RequestParam(defaultValue = "20", required = false) Integer pageNo
+        @ApiParam("页数") @RequestParam(defaultValue = "1", required = false) Integer pageNo
     ) {
         String userId = StpUtil.getLoginIdAsString();
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize , Sort.by("id").descending());
@@ -195,7 +195,7 @@ public class ContentController {
     @ApiOperation("获取我的时间线")
     public RestResult<PageChunk<TimelineVO>> listContentByTimeline(
         @ApiParam("每页条目数") @RequestParam(defaultValue = "20", required = false) Integer pageSize,
-        @ApiParam("页数") @RequestParam(defaultValue = "20", required = false) Integer pageNo
+        @ApiParam("页数") @RequestParam(defaultValue = "1", required = false) Integer pageNo
     ) {
         String userId = StpUtil.getLoginIdAsString();
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize , Sort.by("id").descending());
@@ -207,7 +207,7 @@ public class ContentController {
     @ApiOperation("获取可投资的视频列表")
     public RestResult<PageChunk<ContentVO>> listContentByStocking(
         @ApiParam("每页条目数") @RequestParam(defaultValue = "20", required = false) Integer pageSize,
-        @ApiParam("页数") @RequestParam(defaultValue = "20", required = false) Integer pageNo
+        @ApiParam("页数") @RequestParam(defaultValue = "1", required = false) Integer pageNo
     ) {
         String userId = StpUtil.getLoginIdAsString();
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize , Sort.by("id").descending());

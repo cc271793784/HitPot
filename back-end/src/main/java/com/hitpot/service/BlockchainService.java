@@ -12,6 +12,7 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.utils.Convert;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 
@@ -25,12 +26,14 @@ public class BlockchainService {
     private PotToken potToken;
     @Autowired
     private WalletService walletService;
+    @Resource(name = "publicKey")
+    private String publicKey;
     // 余额不足时，最小的挖矿金额
     private BigInteger minMintAmount = Convert.toWei("500000", Convert.Unit.ETHER).toBigInteger();
 
     @PostConstruct
     public void init() {
-        hitpotBridge.depositEventEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST)
+        hitpotBridge.depositEventEventFlowable(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST)
             .subscribe(result -> {
                 String address = result.account;
                 BigInteger amountPot = result.amount;
@@ -40,7 +43,7 @@ public class BlockchainService {
             }, error -> {
                 log.error(error.getMessage(), error);
             });
-        hitpotBridge.withdrawEventEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST)
+        hitpotBridge.withdrawEventEventFlowable(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST)
             .subscribe(result -> {
                 String address = result.account;
                 BigInteger amountPot = result.amount;
@@ -80,6 +83,40 @@ public class BlockchainService {
                     log.info(
                         "withdraw, address:{}, amountPot:{}, userTransactionId:{}, transactionHash:{}, statusOk:{}",
                         address, amountPot, userTransactionId, transactionReceipt.getTransactionHash(),
+                        transactionReceipt.isStatusOK()
+                    );
+                }
+            });
+    }
+
+    @Async
+    public void potFaucet(String address, long amountPot) {
+        log.info("faucet start, address:{}, amountPot:{}", address, amountPot);
+        BigInteger faucetAmount = walletService.convertToWeiFromSzabo(amountPot);
+        potToken.balanceOf(publicKey).sendAsync()
+            .thenCompose(balance -> {
+                log.info("hitpot bridge balance: {}", balance);
+                if (balance.compareTo(faucetAmount) <= 0) {
+                    BigInteger mintAmount = minMintAmount;
+                    if (faucetAmount.compareTo(minMintAmount) > 0) {
+                        mintAmount = faucetAmount;
+                    }
+                    return potToken.mint(publicKey, mintAmount).sendAsync();
+                } else {
+                    return CompletableFuture.completedFuture(new TransactionReceipt());
+                }
+            })
+            .thenCompose(transactionReceipt -> {
+                log.info("faucet pot token mint, account:{}, amount:{}, status:{}", hitpotBridge.getContractAddress(), amountPot, transactionReceipt.isStatusOK());
+                return potToken.transfer(address, faucetAmount).sendAsync();
+            })
+            .whenCompleteAsync((transactionReceipt, error) -> {
+                if (error != null) {
+                    log.error(error.getMessage(), error);
+                } else {
+                    log.info(
+                        "faucet transfer, address:{}, amountPot:{}, transactionHash:{}, statusOk:{}",
+                        address, amountPot, transactionReceipt.getTransactionHash(),
                         transactionReceipt.isStatusOK()
                     );
                 }

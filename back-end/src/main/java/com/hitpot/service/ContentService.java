@@ -376,7 +376,9 @@ public class ContentService {
                 .contentTimelineId(userTimeline.getId())
                 .content(contentService.detailContent(userId, userTimeline.getContentId()))
                 .createTime(userTimeline.getCreateTime())
+                .comment(userTimeline.getUserComment())
                 .shareType(userTimeline.getShareType())
+                .user(userService.detailUser(userId, userTimeline.getUserId()))
                 .build());
         return PageUtils.buildContentVOPageChunk(paginationVO);
     }
@@ -406,7 +408,7 @@ public class ContentService {
 
     public PageChunk<ContentVO> pageByStocking(String userId, PageRequest pageRequest) {
         QContent qContent = QContent.content;
-        BooleanExpression queryExpression = qContent.countIpNftLeft.lt(0);
+        BooleanExpression queryExpression = qContent.countIpNftLeft.gt(0).and(qContent.userId.ne(userId));
         Page<Content> pagination = contentRepository.findAll(queryExpression, pageRequest);
         Page<ContentVO> paginationVO = pagination.map(content -> buildContent(userId, content));
         return PageUtils.buildContentVOPageChunk(paginationVO);
@@ -449,7 +451,7 @@ public class ContentService {
 
     public PageChunk<TimelineVO> pageByTimeline(String userId, PageRequest pageRequest) {
         QUserTimeline qUserTimeline = QUserTimeline.userTimeline;
-        BooleanExpression booleanExpression = qUserTimeline.userId.eq(userId);
+        BooleanExpression booleanExpression = qUserTimeline.userId.eq(userId).and(qUserTimeline.shareType.ne(3));
         Page<UserTimeline> pagination = userTimelineRepository.findAll(booleanExpression, pageRequest);
         Page<TimelineVO> paginationVO = pagination.map(userTimeline ->
             TimelineVO.builder()
@@ -458,6 +460,7 @@ public class ContentService {
                 .content(contentService.detailContent(userId, userTimeline.getContentId()))
                 .createTime(userTimeline.getCreateTime())
                 .shareType(userTimeline.getShareType())
+                .user(userService.detailUser(userId, userTimeline.getUserId()))
                 .build());
         return PageUtils.buildContentVOPageChunk(paginationVO);
     }

@@ -68,7 +68,7 @@ create table content_marked (
   id bigint(20) primary key auto_increment,
   user_id varchar(256),
   content_id bigint(20) comment "内容id（视频id）",
-  utm_content varchar(20) comment "标识分享链接",
+  utm_content varchar(256) comment "标识分享链接",
   liked tinyint(4) default 0,
   marked tinyint(4) default 0,
   disabled tinyint(4) default 0,

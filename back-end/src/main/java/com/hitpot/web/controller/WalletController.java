@@ -5,11 +5,9 @@ import com.hitpot.service.WalletService;
 import com.hitpot.service.vo.HitPriceVO;
 import com.hitpot.service.vo.ReturnBooleanVO;
 import com.hitpot.service.vo.WalletVO;
-import com.hitpot.web.controller.req.ContentCollectForm;
-import com.hitpot.web.controller.req.ContentPurchaseNftForm;
-import com.hitpot.web.controller.req.ExchangeHitForm;
-import com.hitpot.web.controller.req.WithdrawForm;
+import com.hitpot.web.controller.req.*;
 import com.hitpot.web.result.RestResult;
+import com.hitpot.web.controller.req.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -74,5 +72,12 @@ public class WalletController {
     @ApiOperation("获取HIT单价")
     public RestResult<HitPriceVO> getHitPrice() {
         return RestResult.success(walletService.getPriceOfHit());
+    }
+
+    @ResponseBody
+    @PostMapping("/faucet")
+    @ApiOperation("获取POT水龙头")
+    public RestResult<ReturnBooleanVO> potFaucet(@RequestBody FaucetForm faucetForm) {
+        return RestResult.success(ReturnBooleanVO.builder().success(walletService.potFaucet(faucetForm)).build());
     }
 }
