@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserTransactionRepository extends JpaRepository<UserTransaction, Long>, QuerydslPredicateExecutor<UserTransaction> {
+    UserTransaction findFirstByTransactionId(String transactionId);
 }

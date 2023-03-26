@@ -5,6 +5,7 @@ import com.hitpot.contract.PotToken;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 
@@ -29,17 +30,24 @@ public class BlockchainService {
                 Long amountPot = result.amount.longValue();
                 String transactionId = result.log.getTransactionHash();
                 log.info("deposit pot, account:{}, amount:{}, transactionId:{}", address, amountPot, transactionId);
+                walletService.depositPot(address, walletService.convertToSzaboFromWei(amountPot), transactionId);
             }, error -> {
                 log.error(error.getMessage(), error);
             });
         hitpotBridge.withdrawEventEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST)
             .subscribe(result -> {
                 String address = result.account;
-                Long amountPot = result.param1.longValue();
-                String transactionId = result.log.getTransactionHash();
-                log.info("withdraw pot, account:{}, amount:{}, transactionId:{}", address, amountPot, transactionId);
+                Long amountPot = result.amount.longValue();
+                Long userTransactionId = result.userTransactionId.longValue();
+                log.info("withdraw pot, account:{}, amount:{}, userTransaction:{}", address, amountPot, userTransactionId);
+                walletService.updateWithdrawPotStatus(address, walletService.convertToSzaboFromWei(amountPot), userTransactionId);
             }, error -> {
                 log.error(error.getMessage(), error);
             });
+    }
+
+    @Async
+    public void withdraw(String address, long amountPot) {
+
     }
 }

@@ -25,4 +25,6 @@ public class MaterialVO {
     private String url;
     @ApiModelProperty("资源大小")
     private Long size;
+    @ApiModelProperty("时长(ms)")
+    private Long duration;
 }

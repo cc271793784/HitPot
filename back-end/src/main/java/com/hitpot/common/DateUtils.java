@@ -29,4 +29,14 @@ public final class DateUtils {
     public static LocalDateTime fromString(String timeText) {
         return LocalDateTime.parse(timeText, DATE_TIME_FORMATTER);
     }
+
+    public static long retrieveMills(String timeFormat) {
+        String[] array = timeFormat.trim().split("[:.]");
+        long duration = 1000 * 60 * 60 * Long.parseLong(array[0]) + 1000 * 60 * Long.parseLong(array[1]) + 1000 * Long.parseLong(array[2]);
+        if (array.length == 4) {
+            return duration + Long.parseLong(array[3]);
+        } else {
+            return duration;
+        }
+    }
 }

@@ -8,6 +8,7 @@ import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Event;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.abi.datatypes.generated.Uint64;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
@@ -62,7 +63,7 @@ public class HitpotBridge extends Contract {
     ;
 
     public static final Event WITHDRAWEVENT_EVENT = new Event("WithdrawEvent",
-        Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}, new TypeReference<Uint256>() {}));
+        Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}, new TypeReference<Uint256>() {}, new TypeReference<Uint64>() {}));
     ;
 
     @Deprecated
@@ -156,7 +157,8 @@ public class HitpotBridge extends Contract {
             WithdrawEventEventResponse typedResponse = new WithdrawEventEventResponse();
             typedResponse.log = eventValues.getLog();
             typedResponse.account = (String) eventValues.getNonIndexedValues().get(0).getValue();
-            typedResponse.param1 = (BigInteger) eventValues.getNonIndexedValues().get(1).getValue();
+            typedResponse.amount = (BigInteger) eventValues.getNonIndexedValues().get(1).getValue();
+            typedResponse.userTransactionId = (BigInteger) eventValues.getNonIndexedValues().get(2).getValue();
             responses.add(typedResponse);
         }
         return responses;
@@ -170,7 +172,8 @@ public class HitpotBridge extends Contract {
                 WithdrawEventEventResponse typedResponse = new WithdrawEventEventResponse();
                 typedResponse.log = log;
                 typedResponse.account = (String) eventValues.getNonIndexedValues().get(0).getValue();
-                typedResponse.param1 = (BigInteger) eventValues.getNonIndexedValues().get(1).getValue();
+                typedResponse.amount = (BigInteger) eventValues.getNonIndexedValues().get(1).getValue();
+                typedResponse.userTransactionId = (BigInteger) eventValues.getNonIndexedValues().get(2).getValue();
                 return typedResponse;
             }
         });
@@ -229,11 +232,12 @@ public class HitpotBridge extends Contract {
         return executeRemoteCallTransaction(function);
     }
 
-    public RemoteFunctionCall<TransactionReceipt> withdraw(String account, BigInteger amount) {
+    public RemoteFunctionCall<TransactionReceipt> withdraw(String account, BigInteger amount, BigInteger userTransactionId) {
         final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(
             FUNC_WITHDRAW,
             Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(160, account),
-                new org.web3j.abi.datatypes.generated.Uint256(amount)),
+                new org.web3j.abi.datatypes.generated.Uint256(amount),
+                new org.web3j.abi.datatypes.generated.Uint64(userTransactionId)),
             Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
@@ -271,6 +275,8 @@ public class HitpotBridge extends Contract {
     public static class WithdrawEventEventResponse extends BaseEventResponse {
         public String account;
 
-        public BigInteger param1;
+        public BigInteger amount;
+
+        public BigInteger userTransactionId;
     }
 }

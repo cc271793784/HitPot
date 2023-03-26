@@ -2,6 +2,7 @@ package com.hitpot.service;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson2.JSON;
 import com.hitpot.common.DateUtils;
 import com.hitpot.common.SignatureUtils;
 import com.hitpot.common.exception.HitpotException;
@@ -19,7 +20,6 @@ import com.hitpot.service.vo.LoginResultVO;
 import com.hitpot.service.vo.UserVO;
 import com.hitpot.web.controller.req.LoginForm;
 import com.hitpot.web.controller.req.UserForm;
-import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;

@@ -2,7 +2,10 @@ package com.hitpot.service;
 
 import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.RuntimeUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
+import com.hitpot.common.DateUtils;
 import com.hitpot.common.exception.HitpotException;
 import com.hitpot.common.exception.HitpotExceptionEnum;
 import com.hitpot.domain.Material;
@@ -29,6 +32,9 @@ public class MaterialService {
     @Value("${material.baseUrl}")
     private String baseUrl;
 
+    @Value("${material.ffmpeg_command}")
+    private String ffmpegCommand;
+
     @Autowired
     private MaterialRepository materialRepository;
 
@@ -51,11 +57,13 @@ public class MaterialService {
 
         String filename = filenamePrefix + IdUtil.simpleUUID() + "." + FileNameUtil.getSuffix(file.getOriginalFilename());
         // 保存文件
-        File saveFile = new File(savePath + File.separator + filename);
+        String filePath = savePath + File.separator + filename;
+        File saveFile = new File(filePath);
         file.transferTo(saveFile);
         // 计算文件的md5值
         String md5 = DigestUtil.md5Hex(saveFile);
 
+        long duration = fetchVideoDuration(filePath);
         // 保存文件到数据库中
         Material material = Material.builder()
             .userId(userId)
@@ -64,6 +72,7 @@ public class MaterialService {
             .md5(md5)
             .size(saveFile.length())
             .materialType(materialType)
+            .duration(duration)
             .disabled(false)
             .deleted(false)
             .build();
@@ -76,6 +85,7 @@ public class MaterialService {
             .materialType(materialType)
             .url(baseUrl + material.getFilename())
             .size(material.getSize())
+            .duration(material.getDuration())
             .build();
     }
 
@@ -88,5 +98,22 @@ public class MaterialService {
 
     public Material detailMaterial(String filename) {
         return materialRepository.findFirstByFilename(filename);
+    }
+
+    public long fetchVideoDuration(String file) {
+        try {
+            String command = ffmpegCommand + " -i " + file + " 2>&1 | grep Duration | awk '{print $2}' | awk -F , '{print $1}'";
+            Process process = RuntimeUtil.exec("sh", "-c", command);
+            String result = RuntimeUtil.getResult(process);
+            log.info("command: {}, result: {}", command, result);
+            if (StrUtil.isBlank(result)) {
+                return -1;
+            } else {
+                return DateUtils.retrieveMills(result);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return 0L;
+        }
     }
 }

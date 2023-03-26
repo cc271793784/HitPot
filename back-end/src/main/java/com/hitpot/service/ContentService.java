@@ -73,7 +73,7 @@ public class ContentService {
             .countIpNft(contentForm.getCountIpNft())
             .countIpNftForInvestor(Double.valueOf(Math.floor(contentForm.getCountIpNft() * contentForm.getIpNftRatioForInvestor())).longValue())
             .countMaxLimitPerInvestor(contentForm.getMaxCountIpNftForPerInvestor())
-            .priceIpNft(walletService.convertToMweiFromEther(contentForm.getPriceIpNft()))
+            .priceIpNft(walletService.convertToSzaboFromEther(contentForm.getPriceIpNft()))
             .yieldRateInfluencer(contentForm.getYieldRateOfInfluencer())
             .yieldRateViewer(contentForm.getYieldRateOfViewer())
             .deleted(false)
@@ -182,8 +182,8 @@ public class ContentService {
         ContentWatch contentWatch = ContentWatch.builder()
             .userId(userId)
             .contentId(watchForm.getContentId())
-            .amountHit(walletService.convertToMweiFromEther(userLevelPermission.getAmountHitPerSecond() * duration))
-            .amountSec(walletService.convertToMweiFromEther(userLevelPermission.getAmountSecPerSecond() * duration))
+            .amountHit(walletService.convertToSzaboFromEther(userLevelPermission.getAmountHitPerSecond() * duration))
+            .amountSec(walletService.convertToSzaboFromEther(userLevelPermission.getAmountSecPerSecond() * duration))
             .duration(duration)
             .userLevel(user.getLevel())
             .utmContent(utmContent)
@@ -296,21 +296,23 @@ public class ContentService {
             contentMarkedRepository.save(contentMarked);
         }
 
-        // 保存时间线
-        UserTimeline userTimeline = UserTimeline.builder()
-            .userId(userId)
-            .contentId(contentId)
-            .contentMarkedId(contentMarked.getId())
-            .userComment(shareForm.getComment())
-            .shareType(shareForm.getShareType())
-            .build();
-        userTimelineRepository.save(userTimeline);
+        if (shareForm.getShareType() != null) {
+            // 保存时间线
+            UserTimeline userTimeline = UserTimeline.builder()
+                .userId(userId)
+                .contentId(contentId)
+                .contentMarkedId(contentMarked.getId())
+                .userComment(shareForm.getComment())
+                .shareType(shareForm.getShareType())
+                .build();
+            userTimelineRepository.save(userTimeline);
+        }
 
         return ShareVO.builder()
             .contentId(contentMarked.getContentId())
             .utmContent(contentMarked.getUtmContent())
-            .shareType(userTimeline.getShareType())
-            .comment(userTimeline.getUserComment())
+            .shareType(shareForm.getShareType())
+            .comment(shareForm.getComment())
             .build();
     }
 
@@ -479,7 +481,7 @@ public class ContentService {
             .countIpNft(content.getCountIpNft())
             .countIpNftForInvestor(content.getCountIpNftForInvestor())
             .countIpNftLeft(walletService.detailContentNft(content).getCountIpNftLeft())
-            .priceIpNft(walletService.convertToEtherFromMwei(content.getPriceIpNft()))
+            .priceIpNft(walletService.convertToEtherFromSzabo(content.getPriceIpNft()))
             .balanceHit(contentHitLeftVO.getAmountHit())
             .ads(contentHitLeftVO.getAds())
             .liked(false)

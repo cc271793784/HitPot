@@ -3,6 +3,8 @@ spring:
     url: jdbc:mysql://mysql.mysql:3306/hitpot?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Asia/Shanghai
     username: root
     password: RRim0JyBGezM2jl2
+  jpa:
+    show-sql: false
   redis:
     host: redis.redis
     port: 6379
@@ -11,3 +13,4 @@ material:
   upload:
     saveDir: /ts-hitpot-server/upload
   baseUrl: /static/
+  ffmpeg_command: "/usr/local/bin/ffmpeg"
