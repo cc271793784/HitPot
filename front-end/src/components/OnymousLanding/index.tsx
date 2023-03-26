@@ -1,5 +1,6 @@
 import cx from 'classnames'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Button } from 'react-bootstrap'
 
 import styles from './layout.module.css'
 
@@ -10,44 +11,76 @@ import FeedEventPostNewVideo from 'components/FeedEventPostNewVideo'
 
 import * as videoApi from 'web-api/video'
 import { VideoList } from 'web-api/video'
+import { VideoListPageSize } from '../../constants'
 
 type VideoListType = 'recommend' | 'subscription' | 'ipnft'
 
 const OnymousLanding = () => {
   const [videoListType, setVideoListType] = useState<VideoListType>('recommend')
   const videoListTypeRef = useRef<VideoListType>('recommend')
+  const lastVideoListTypeRef = useRef<VideoListType>('recommend')
   const [videoList, setVideoList] = useState<VideoList | null>(null)
+  const videoListRef = useRef<VideoList | null>(null)
+  const [pageNo, setPageNo] = useState(1)
+
+  const setVideoListTypeWrap = useCallback(
+    (type: VideoListType) => {
+      setVideoListType(type)
+      videoListTypeRef.current = type
+      lastVideoListTypeRef.current = videoListType
+    },
+    [videoListType],
+  )
+
+  const handleClickLoadMoreButton = useCallback(() => {
+    setPageNo((v) => v + 1)
+  }, [])
+
+  const updateVideoList = useCallback((list: VideoList, videoListType: VideoListType) => {
+    if ((videoListType !== lastVideoListTypeRef.current) === true || videoListRef.current === null) {
+      setVideoList(list)
+      videoListRef.current = list
+    } else {
+      const newList = {
+        ...list,
+        items: videoListRef.current.items.concat(list.items),
+      }
+      setVideoList(newList)
+      videoListRef.current = newList
+    }
+    lastVideoListTypeRef.current = videoListType
+  }, [])
 
   useEffect(() => {
     if (videoListType === 'recommend') {
       videoApi
-        .pageContentByLevel(10, 1)
+        .pageContentByLevel(VideoListPageSize, pageNo)
         .then((result) => {
           if (videoListTypeRef.current === 'recommend') {
-            setVideoList(result)
+            updateVideoList(result, 'recommend')
           }
         })
         .catch(() => {})
     } else if (videoListType === 'subscription') {
       videoApi
-        .pageContentBySubscribe(10, 1)
+        .pageContentBySubscribe(VideoListPageSize, pageNo)
         .then((result) => {
           if (videoListTypeRef.current === 'subscription') {
-            setVideoList(result)
+            updateVideoList(result, 'subscription')
           }
         })
         .catch(() => {})
     } else if (videoListType === 'ipnft') {
       videoApi
-        .pageContentByStocking(10, 1)
+        .pageContentByStocking(VideoListPageSize, pageNo)
         .then((result) => {
           if (videoListTypeRef.current === 'ipnft') {
-            setVideoList(result)
+            updateVideoList(result, 'ipnft')
           }
         })
         .catch(() => {})
     }
-  }, [videoListType])
+  }, [pageNo, updateVideoList, videoListType])
 
   return (
     <div className={cx(styles.wrap)}>
@@ -58,8 +91,7 @@ const OnymousLanding = () => {
             href='/'
             onClick={(e) => {
               e.preventDefault()
-              setVideoListType('recommend')
-              videoListTypeRef.current = 'recommend'
+              setVideoListTypeWrap('recommend')
             }}
           >
             Recommend
@@ -71,8 +103,7 @@ const OnymousLanding = () => {
             href='/'
             onClick={(e) => {
               e.preventDefault()
-              setVideoListType('subscription')
-              videoListTypeRef.current = 'subscription'
+              setVideoListTypeWrap('subscription')
             }}
           >
             Subscriptions
@@ -84,15 +115,14 @@ const OnymousLanding = () => {
             href='/'
             onClick={(e) => {
               e.preventDefault()
-              setVideoListType('ipnft')
-              videoListTypeRef.current = 'ipnft'
+              setVideoListTypeWrap('ipnft')
             }}
           >
             IP NFTs
           </a>
         </li>
       </ul>
-      <div className={cx('d-flex flex-column', styles.videoList)}>
+      <div className={cx('d-flex flex-column align-items-center', styles.videoList)}>
         {videoListType === 'recommend' &&
           videoList?.items.map(() => {
             return (
@@ -117,12 +147,31 @@ const OnymousLanding = () => {
               />
             )
           })}
-        {videoListType === 'subscription' && (
-          // videoList?.items.map(() => {
-          //   return <VideoCardForTimeline opts={<VideoCardOptBtnsForFavorited />} />
-          // })
-          <FeedEventPostNewVideo />
-        )}
+        {videoListType === 'subscription' &&
+          videoList?.items.map((item, i) => {
+            return (
+              <FeedEventPostNewVideo
+                event={{
+                  content: 'Post new video',
+                  timestamp: Date.now(),
+                  trigger: {
+                    avatarUrl: '',
+                    nickname: '',
+                  },
+                }}
+                videoInfo={{
+                  id: 0,
+                  title: '',
+                  thumbnail: '',
+                  description: '',
+                  duration: 0,
+                  creator: {
+                    nickname: '',
+                  },
+                }}
+              />
+            )
+          })}
         {videoListType === 'ipnft' &&
           videoList?.items.map(() => {
             return (
@@ -147,6 +196,15 @@ const OnymousLanding = () => {
               />
             )
           })}
+        {(videoList?.totalPages || 0) > (videoList?.pageNo || 0) && (
+          <Button
+            className={cx(styles.loadMoreButton)}
+            variant='outline-primary'
+            onClick={handleClickLoadMoreButton}
+          >
+            load more
+          </Button>
+        )}
       </div>
     </div>
   )

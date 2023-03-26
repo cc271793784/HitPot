@@ -198,7 +198,7 @@ const VideoCardOptBtns = (props: Props) => {
           videoId={videoId}
           videoTitle={videoTitle}
           videoThumbnail={''}
-          videoPosterNickname={''}
+          videoUploaderNickname={''}
           videoDescription={''}
         />
       )}

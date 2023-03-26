@@ -2,91 +2,124 @@ import cx from 'classnames'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { observer } from 'mobx-react-lite'
 import _ from 'lodash'
+import { Empty } from 'antd'
+import { Button } from 'react-bootstrap'
 
 import styles from './layout.module.css'
 
 import VideoCard from 'components/VideoCard'
 import VideoCardOptBtnsForLiked from 'components/VideoCardOptBtnsForLiked'
 import VideoCardOptBtnsForFavorited from 'components/VideoCardOptBtnsForSubscription'
-import VideoCardOptBtnsForShared from 'components/VideoCardOptBtnsForShared'
 import VideoCardOptBtnsForOwnedIPNFT from 'components/VideoCardOptBtnsForOwnedIPNFT'
 import VideoCardOptBtnsForMyPost from 'components/VideoCardOptBtnsForMyPost'
+import FeedEventShareVideo from 'components/FeedEventShareVideo'
 
 import type { VideoList } from 'web-api/video'
 import * as videoApi from 'web-api/video'
 import userStore from 'stores/user'
-import { Empty } from 'antd'
-import FeedEventShareVideo from 'components/FeedEventShareVideo'
+import { VideoListPageSize } from '../../constants'
 
 type VideoListType = 'liked' | 'favorited' | 'timeline' | 'my ipnft' | 'my post' | 'history'
 
 const Home = () => {
   const [videoListType, setVideoListType] = useState<VideoListType>('liked')
   const videoListTypeRef = useRef<VideoListType>('liked')
+  const lastVideoListTypeRef = useRef<VideoListType>('liked')
   const [videoList, setVideoList] = useState<VideoList | null>(null)
+  const videoListRef = useRef<VideoList | null>(null)
+  const [pageNo, setPageNo] = useState(1)
 
-  const setVideoListTypeWrap = useCallback((type: VideoListType) => {
-    setVideoListType(type)
-    videoListTypeRef.current = type
+  const setVideoListTypeWrap = useCallback(
+    (type: VideoListType) => {
+      setVideoListType(type)
+      videoListTypeRef.current = type
+      lastVideoListTypeRef.current = videoListType
+    },
+    [videoListType],
+  )
+
+  const handleClickLoadMoreButton = useCallback(() => {
+    setPageNo((v) => v + 1)
+  }, [])
+
+  const updateVideoList = useCallback((list: VideoList, videoListType: VideoListType) => {
+    if ((videoListType !== lastVideoListTypeRef.current) === true || videoListRef.current === null) {
+      setVideoList(list)
+      videoListRef.current = list
+    } else {
+      const newList = {
+        ...list,
+        items: videoListRef.current.items.concat(list.items),
+      }
+      setVideoList(newList)
+      videoListRef.current = newList
+    }
+    lastVideoListTypeRef.current = videoListType
   }, [])
 
   useEffect(() => {
     if (videoListType === 'liked') {
       videoApi
-        .pageContentByLiked(10, 1)
+        .pageContentByLiked(VideoListPageSize, pageNo)
         .then((result) => {
           if (videoListTypeRef.current === 'liked') {
-            setVideoList(result)
+            updateVideoList(result, 'liked')
           }
         })
         .catch(() => {})
     } else if (videoListType === 'favorited') {
       videoApi
-        .pageContentByMarked(10, 1)
+        .pageContentByMarked(VideoListPageSize, pageNo)
         .then((result) => {
           if (videoListTypeRef.current === 'favorited') {
-            setVideoList(result)
+            updateVideoList(result, 'favorited')
           }
         })
         .catch(() => {})
     } else if (videoListType === 'timeline') {
       videoApi
-        .pageContentByShared(10, 1)
+        .pageContentByShared(VideoListPageSize, pageNo)
         .then((result) => {
           if (videoListTypeRef.current === 'timeline') {
-            setVideoList(result)
+            updateVideoList(result, 'timeline')
           }
         })
         .catch(() => {})
     } else if (videoListType === 'my ipnft') {
       videoApi
-        .pageContentByStock(10, 1)
+        .pageContentByStock(VideoListPageSize, pageNo)
         .then((result) => {
           if (videoListTypeRef.current === 'my ipnft') {
-            setVideoList(result)
+            updateVideoList(result, 'my ipnft')
           }
         })
         .catch(() => {})
     } else if (videoListType === 'my post') {
       videoApi
-        .pageMyContent(10, 1)
+        .pageMyContent(VideoListPageSize, pageNo)
         .then((result) => {
           if (videoListTypeRef.current === 'my post') {
-            setVideoList(result)
+            updateVideoList(result, 'my post')
           }
         })
         .catch(() => {})
     } else if (videoListType === 'history') {
       videoApi
-        .pageContentByWatched(10, 1)
+        .pageContentByWatched(VideoListPageSize, pageNo)
         .then((result) => {
           if (videoListTypeRef.current === 'history') {
-            setVideoList(result)
+            updateVideoList(result, 'history')
           }
         })
         .catch(() => {})
     }
-  }, [videoListType])
+  }, [pageNo, updateVideoList, videoListType])
+
+  console.log(
+    '(videoList?.totalPages || 0) > (videoList?.pageNo || 0)',
+    videoList?.totalPages || 0,
+    videoList?.pageNo || 0,
+  )
 
   return (
     <div className={cx(styles.wrap)}>
@@ -177,7 +210,7 @@ const Home = () => {
           </a>
         </li>
       </ul>
-      <div className={cx('d-flex flex-column', styles.videoList)}>
+      <div className={cx('d-flex flex-column align-items-center', styles.videoList)}>
         {_.isEmpty(videoList?.items) === true && (
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -314,6 +347,15 @@ const Home = () => {
               />
             )
           })}
+        {(videoList?.totalPages || 0) > (videoList?.pageNo || 0) && (
+          <Button
+            className={cx(styles.loadMoreButton)}
+            variant='outline-primary'
+            onClick={handleClickLoadMoreButton}
+          >
+            load more
+          </Button>
+        )}
       </div>
     </div>
   )

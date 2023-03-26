@@ -14,11 +14,12 @@ import iconLogo from 'statics/images/icon-logo-dark.svg'
 import iconExchangeArrows from 'statics/images/icon-exchange-arrows.svg'
 import iconMetamask from 'statics/images/icon-metamask-logo.svg'
 
+import { UserInfo } from 'typings/UserInfo'
 import metamask from 'wallets/metamask'
 import * as userApi from 'web-api/user'
 import userStore from 'stores/user'
 import config from 'web-api/config'
-import { UserInfo } from 'typings/UserInfo'
+import persist from 'stores/persist'
 
 interface Props {
   onClose: () => void
@@ -39,7 +40,6 @@ const ConnectMetaMaskModal = (props: Props) => {
       onClose()
       return
     }
-    metamask.initSigner()
 
     const [ethAccountsError, accounts] = await to(metamask.ethAccounts())
     if (ethAccountsError !== null) {
@@ -63,7 +63,7 @@ const ConnectMetaMaskModal = (props: Props) => {
       return
     }
     config.setAccessToken(accessToken)
-    localStorage.setItem(`ACCESS_TOKEN_${address}`, accessToken)
+    persist.setAccessToken(address, accessToken)
     cookie.set('accessToken', accessToken, {
       expires: 3650,
     })

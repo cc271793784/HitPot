@@ -20,6 +20,14 @@ class WalletStore {
   updateWalletInfo(info: Partial<WalletInfo>) {
     return Object.assign(this._walletInfo, info)
   }
+
+  reset() {
+    this._walletInfo = {
+      balanceHit: 0,
+      balancePot: 0,
+      nfts: [],
+    }
+  }
 }
 
 const walletStore = new WalletStore()

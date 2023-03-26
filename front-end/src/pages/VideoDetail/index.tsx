@@ -13,15 +13,65 @@ import VideoPlayTipMask from 'components/VideoPlayTipMask'
 
 import { VideoDetailInfo } from 'web-api/video'
 import * as videoApi from 'web-api/video'
+import * as userApi from 'web-api/user'
 
 const VideoDetail = () => {
   const routeParams = useParams<{ vid: string }>()
-  const videoElementRef = useRef<HTMLDivElement | null>(null)
   const videoPlayerInstanceRef = useRef<Player | null>(null)
-  const [isAppInited, setIsAppInited] = useState(false)
+  const [isDataInited, setIsDataInited] = useState(false)
+  const [showPlayMask, setShowPlayMask] = useState(true)
   const [videoDetailInfo, setVideoDetailInfo] = useState<VideoDetailInfo | null>(null)
   const [isLiked, setLiked] = useState(false)
   const [isFavorited, setFavorited] = useState(false)
+  const urlQueryRef = useRef<URLSearchParams>(new URLSearchParams(window.location.search))
+  const watchDurationRef = useRef(0)
+
+  const setVideoElementContainerRef = useCallback((element: HTMLDivElement) => {
+    const videoElement = document.createElement('video-js')
+
+    videoElement.classList.add('vjs-big-play-centered')
+    element.appendChild(videoElement)
+
+    const player = videojs(
+      videoElement,
+      {
+        autoplay: false,
+        controls: true,
+        responsive: true,
+        fluid: true,
+        poster: '',
+        sources: [
+          {
+            src: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+            type: 'video/mp4',
+          },
+        ],
+      },
+      () => {
+        videojs.log('player is ready')
+        const vjsPlayButton = document.querySelector('.vjs-big-play-button') as HTMLDivElement
+        if (vjsPlayButton !== null) {
+          vjsPlayButton.style.display = 'none'
+        }
+      },
+    )
+
+    // @ts-ignore
+    player.on('timeupdate', () => {
+      watchDurationRef.current = player.currentTime()
+    })
+
+    player.currentTime()
+
+    videoPlayerInstanceRef.current = player
+  }, [])
+
+  const handleClickSubscribeButton = useCallback(() => {
+    if (videoDetailInfo === null) {
+      return
+    }
+    userApi.subscribe(videoDetailInfo.creator.userId)
+  }, [videoDetailInfo])
 
   const handleClickLikeButton = useCallback(() => {
     if (videoDetailInfo === null) {
@@ -79,6 +129,11 @@ const VideoDetail = () => {
     }
   }, [isFavorited, videoDetailInfo])
 
+  const handleClickPlay = useCallback(() => {
+    setShowPlayMask(false)
+    videoPlayerInstanceRef.current?.play()
+  }, [])
+
   useEffect(() => {
     const { vid } = routeParams
     if (vid === undefined) {
@@ -90,48 +145,12 @@ const VideoDetail = () => {
         setVideoDetailInfo(info)
         setLiked(info.liked)
         setFavorited(info.marked)
-        setIsAppInited(true)
+        setIsDataInited(true)
       })
       .catch(() => {
         message.error('Failed to retrieve video details')
       })
   }, [routeParams])
-
-  useEffect(() => {
-    if (videoPlayerInstanceRef.current === null) {
-      if (videoElementRef.current !== null) {
-        const videoElement = document.createElement('video-js')
-
-        videoElement.classList.add('vjs-big-play-centered')
-        videoElementRef.current.appendChild(videoElement)
-
-        const player = videojs(
-          videoElement,
-          {
-            autoplay: false,
-            controls: true,
-            responsive: true,
-            fluid: true,
-            sources: [
-              {
-                src: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-                type: 'video/mp4',
-              },
-            ],
-          },
-          () => {
-            videojs.log('player is ready')
-            const vjsPlayButton = document.querySelector('.vjs-big-play-button') as HTMLDivElement
-            if (vjsPlayButton !== null) {
-              vjsPlayButton.style.display = 'none'
-            }
-          },
-        )
-
-        videoPlayerInstanceRef.current = player
-      }
-    }
-  }, [])
 
   useEffect(() => {
     const player = videoPlayerInstanceRef.current
@@ -144,27 +163,44 @@ const VideoDetail = () => {
     }
   }, [])
 
+  useEffect(() => {
+    if (videoDetailInfo === null) {
+      return
+    }
+
+    const timer = setInterval(() => {
+      videoApi.watch(videoDetailInfo.contentId, watchDurationRef.current, urlQueryRef.current.get('utmContent') ?? '')
+    }, 10 * 1000)
+
+    return () => {
+      clearInterval(timer)
+    }
+  }, [videoDetailInfo])
+
   return (
     <>
-      {isAppInited === false && (
+      {isDataInited === false && (
         <div className={cx('w-100 d-flex flex-grow-1 justify-content-center align-items-center')}>
           <LoadingOutlined style={{ fontSize: 48 }} />
         </div>
       )}
-      {isAppInited && videoDetailInfo !== null && (
+      {isDataInited && videoDetailInfo !== null && (
         <div className={cx(styles.wrap)}>
           <div className={cx('position-relative', styles.videoPlayerContainer)}>
             <div
               className={cx('w-100 h-100')}
-              ref={videoElementRef}
+              ref={setVideoElementContainerRef}
             />
-            <VideoPlayTipMask
-              videoId={videoDetailInfo.contentId}
-              hitCount={videoDetailInfo.balanceHit}
-              userLevel={videoDetailInfo.watcherLevel}
-              rewardPercentForViewer={videoDetailInfo.yieldRateOfViewer}
-              rewardPercentForSharing={videoDetailInfo.yieldRateOfInfluencer}
-            />
+            {showPlayMask && videoDetailInfo !== null && (
+              <VideoPlayTipMask
+                videoId={videoDetailInfo.contentId}
+                hitCount={videoDetailInfo.balanceHit}
+                userLevel={videoDetailInfo.watcherLevel}
+                rewardPercentForViewer={videoDetailInfo.yieldRateOfViewer}
+                rewardPercentForSharing={videoDetailInfo.yieldRateOfInfluencer}
+                onClickPlay={handleClickPlay}
+              />
+            )}
           </div>
           <div className={cx('h4 mt-4 mb-0', styles.videoTitle)}>{videoDetailInfo.title}</div>
           <div className={cx('d-flex justify-content-between align-items-center mt-3', styles.uploaderInfo)}>
@@ -179,7 +215,12 @@ const VideoDetail = () => {
               <div className={cx('text-nowrap text-truncate', styles.uploaderName)}>
                 {videoDetailInfo.creator.nickname}
               </div>
-              <button className={cx('btn btn-primary rounded-pill', styles.subscribeButton)}>Subscribe</button>
+              <button
+                className={cx('btn btn-primary rounded-pill', styles.subscribeButton)}
+                onClick={handleClickSubscribeButton}
+              >
+                Subscribe
+              </button>
             </div>
             <div className={cx('d-flex gap-2', styles.optButtons)}>
               <button

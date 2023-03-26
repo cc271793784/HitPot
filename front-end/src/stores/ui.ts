@@ -24,6 +24,11 @@ class UIStore {
   set shouldShowUpgradeMemberCardLevel(flag: boolean) {
     this._shouldShowUpgradeMemberCardLevel = flag
   }
+
+  reset() {
+    this._shouldShowConnectWalletModal = false
+    this._shouldShowUpgradeMemberCardLevel = false
+  }
 }
 
 const uiStore = new UIStore()

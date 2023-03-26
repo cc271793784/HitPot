@@ -1,5 +1,4 @@
 import cx from 'classnames'
-import { useNavigate } from 'react-router-dom'
 import { useCallback } from 'react'
 
 import styles from './layout.module.css'
@@ -16,16 +15,15 @@ interface Props {
   userLevel: UserLevel
   rewardPercentForViewer: number
   rewardPercentForSharing: number
+  onClickPlay: (videoId: number) => void
 }
 
 const VideoPlayTipMask = (props: Props) => {
-  const { videoId, hitCount, userLevel, rewardPercentForViewer, rewardPercentForSharing } = props
-
-  const navigate = useNavigate()
+  const { videoId, hitCount, userLevel, rewardPercentForViewer, rewardPercentForSharing, onClickPlay } = props
 
   const handleClickPlayButton = useCallback(() => {
-    navigate(`/video/${videoId}`)
-  }, [navigate, videoId])
+    onClickPlay(videoId)
+  }, [onClickPlay, videoId])
 
   return (
     <div

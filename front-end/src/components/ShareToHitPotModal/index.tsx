@@ -11,12 +11,12 @@ interface Props {
   videoId: number
   videoTitle: string
   videoThumbnail: string
-  videoPosterNickname: string
+  videoUploaderNickname: string
   videoDescription: string
 }
 
 const ShareToHitPotModal = (props: Props) => {
-  const { videoId, videoTitle, videoThumbnail, videoPosterNickname, videoDescription, onClose } = props
+  const { videoId, videoTitle, videoThumbnail, videoUploaderNickname, videoDescription, onClose } = props
 
   const [comment, setComment] = useState('')
 
@@ -60,7 +60,7 @@ const ShareToHitPotModal = (props: Props) => {
             />
             <div className={cx('d-flex flex-grow-1 flex-column', styles.videoIntro)}>
               <h4 className={cx('mb-0', styles.videoTitle)}>{videoTitle}</h4>
-              <h6 className={cx('mb-0', styles.videoPosterName)}>{videoPosterNickname}</h6>
+              <h6 className={cx('mb-0', styles.videoPosterName)}>{videoUploaderNickname}</h6>
               <div className={cx(styles.videoDescription)}>{videoDescription}</div>
             </div>
           </div>

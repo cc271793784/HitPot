@@ -607,13 +607,7 @@ interface WatchResponse {
   msg: string
 }
 
-export async function watch(
-  contentId: number,
-  duration: number,
-  referrerContentId: string,
-  referrerUserId: string,
-  utmContent: string,
-): Promise<boolean> {
+export async function watch(contentId: number, duration: number, utmContent: string): Promise<boolean> {
   return new Promise((resolve, reject) => {
     axios
       .post<WatchResponse>(
@@ -621,8 +615,6 @@ export async function watch(
         {
           contentId,
           duration,
-          referrerContentId,
-          referrerUserId,
           utmContent,
         },
         {
@@ -633,6 +625,27 @@ export async function watch(
       )
       .then((res) => {
         resolve(res.data.code === config.getSuccessCode())
+      })
+      .catch((error) => {
+        reject(error)
+      })
+  })
+}
+
+interface WatchResponse {
+  code: number
+  data: {
+    success: boolean
+  }
+  msg: string
+}
+
+export async function listMostPopularContent(): Promise<any> {
+  return new Promise((resolve, reject) => {
+    axios
+      .get<WatchResponse>(`${config.getApiServer()}/api/content/list-most-popular-content`)
+      .then((res) => {
+        resolve(res.data.data)
       })
       .catch((error) => {
         reject(error)

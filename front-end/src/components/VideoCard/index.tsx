@@ -1,4 +1,5 @@
 import cx from 'classnames'
+import { useNavigate } from 'react-router-dom'
 
 import styles from './layout.module.css'
 
@@ -7,6 +8,7 @@ import defaultAvatar from 'statics/images/default-avatar.svg'
 
 import VideoPlayTipMask from '../VideoPlayTipMask'
 import { UserLevel } from 'typings/UserLevel'
+import { useCallback } from 'react'
 
 interface Props {
   style?: React.CSSProperties
@@ -32,6 +34,12 @@ interface Props {
 const VideoCard = (props: Props) => {
   const { opts, showPlayTipMask, style, videoInfo } = props
 
+  const navigate = useNavigate()
+
+  const handleClickPlay = useCallback(() => {
+    navigate(`/video/${videoInfo.id}`)
+  }, [navigate, videoInfo.id])
+
   return (
     <div
       className={cx(styles.videoCard)}
@@ -53,6 +61,7 @@ const VideoCard = (props: Props) => {
             hitCount={videoInfo.balanceHit}
             rewardPercentForViewer={videoInfo.rewardPercentForViewer}
             rewardPercentForSharing={videoInfo.rewardPercentForSharing}
+            onClickPlay={handleClickPlay}
           />
         )}
       </div>

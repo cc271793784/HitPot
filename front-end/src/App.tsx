@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import to from 'await-to-js'
 import cx from 'classnames'
 import { LoadingOutlined } from '@ant-design/icons'
+import { useNavigate } from 'react-router-dom'
 
 import './App.css'
 
@@ -14,11 +15,14 @@ import metamask from 'wallets/metamask'
 import * as userApi from 'web-api/user'
 import * as walletApi from 'web-api/wallet'
 import config from 'web-api/config'
+
 import userStore from 'stores/user'
 import walletStore from 'stores/wallet'
+import uiStore from 'stores/ui'
 
 import Header from 'components/Header'
 import Footer from 'components/Footer'
+import { ProtectedRoute } from 'components/ProtectedRoute'
 
 import Landing from 'pages/Landing'
 import PostVideo from 'pages/PostVideo'
@@ -26,11 +30,30 @@ import Wallet from 'pages/Wallet'
 import Home from 'pages/Home'
 import VideoDetail from 'pages/VideoDetail'
 import Settings from 'pages/Settings'
+import persist from 'stores/persist'
 
 function App() {
+  const navigate = useNavigate()
   const appInitPromiseUtil = useRef(createPromiseReadyUtil())
-
   const [isAppInited, setIsAppInited] = useState(false)
+
+  useEffect(() => {
+    const handleMetamaskAccountsChanged = (accounts: string[]) => {
+      if (accounts.length === 0) {
+        navigate('/')
+        persist.removeAccessToken(userStore.walletAddress)
+        userStore.reset()
+        uiStore.reset()
+        walletStore.reset()
+      }
+    }
+
+    metamask.on('accountsChanged', handleMetamaskAccountsChanged)
+
+    return () => {
+      metamask.off('accountsChanged', handleMetamaskAccountsChanged)
+    }
+  }, [navigate])
 
   useEffect(() => {
     appInitPromiseUtil.current.promise.finally(() => {
@@ -45,7 +68,7 @@ function App() {
         return
       }
 
-      const [initMetaMaskError] = await to(metamask.initProvider())
+      const [initMetaMaskError] = await to(metamask.init())
       console.log('initMetaMaskError', initMetaMaskError)
       if (initMetaMaskError !== null) {
         appInitPromiseUtil.current.resolve()
@@ -62,7 +85,7 @@ function App() {
       const address = accounts[0]
       userStore.walletAddress = address
 
-      const accessToken = localStorage.getItem(`ACCESS_TOKEN_${address}`)
+      const accessToken = persist.getAccessToken(address)
       console.log('accessToken', accessToken)
       if (accessToken === null) {
         appInitPromiseUtil.current.resolve()
@@ -102,7 +125,7 @@ function App() {
         </div>
       )}
       {isAppInited && (
-        <BrowserRouter>
+        <>
           <Header />
           <Routes>
             <Route
@@ -111,23 +134,43 @@ function App() {
             />
             <Route
               path='/post-video'
-              element={<PostVideo />}
+              element={
+                <ProtectedRoute>
+                  <PostVideo />
+                </ProtectedRoute>
+              }
             />
             <Route
               path='/home'
-              element={<Home />}
+              element={
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              }
             />
             <Route
               path='/settings'
-              element={<Settings />}
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              }
             />
             <Route
               path='/wallet'
-              element={<Wallet />}
+              element={
+                <ProtectedRoute>
+                  <Wallet />
+                </ProtectedRoute>
+              }
             />
             <Route
               path='/video/:vid'
-              element={<VideoDetail />}
+              element={
+                <ProtectedRoute>
+                  <VideoDetail />
+                </ProtectedRoute>
+              }
             />
             <Route
               path='*'
@@ -140,7 +183,7 @@ function App() {
             />
           </Routes>
           <Footer />
-        </BrowserRouter>
+        </>
       )}
     </div>
   )

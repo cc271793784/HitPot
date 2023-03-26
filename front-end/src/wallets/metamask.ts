@@ -1,22 +1,31 @@
 import EventEmitter from 'events'
-import { ethers, BrowserProvider, Signer } from 'ethers'
+import { ethers, BrowserProvider } from 'ethers'
+
+interface MetamaskEvents {
+  accountsChanged: (accounts: string[]) => void
+}
+
+declare interface MetaMaskWrapper {
+  on<U extends keyof MetamaskEvents>(event: U, cb: MetamaskEvents[U]): this
+  off<U extends keyof MetamaskEvents>(event: U, cb: MetamaskEvents[U]): this
+  emit<U extends keyof MetamaskEvents>(event: U, ...args: Parameters<MetamaskEvents[U]>): boolean
+}
 
 class MetaMaskWrapper extends EventEmitter {
   private provider: BrowserProvider | undefined
-
-  private signer: Signer | undefined
 
   isMetaMaskInstalled = (): boolean => {
     return window.ethereum.isMetaMask === true
   }
 
-  initProvider = async () => {
+  init = async () => {
     const provider = new ethers.BrowserProvider(window.ethereum)
     this.provider = provider
-  }
 
-  initSigner = async () => {
-    this.signer = await this.provider?.getSigner()
+    // @ts-ignore
+    window.ethereum.on('accountsChanged', (accounts: string[]) => {
+      this.emit('accountsChanged', accounts)
+    })
   }
 
   ethAccounts = async (): Promise<string[]> =>

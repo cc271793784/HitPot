@@ -46,6 +46,18 @@ class UserStore {
     cloneInfo.avatarImgUrl = cloneInfo.avatarImgUrl ?? defaultAvatar
     return Object.assign(this._userInfo, cloneInfo)
   }
+
+  reset() {
+    this._isLoggedIn = false
+    this._walletAddress = ''
+    this._userInfo = {
+      level: 0,
+      nickname: '',
+      userId: '',
+      avatarImgUrl: '',
+      feedSettingType: 0,
+    }
+  }
 }
 
 const userStore = new UserStore()
