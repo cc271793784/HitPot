@@ -56,6 +56,8 @@ const ShareVideoModal = (props: Props) => {
       show={true}
       onHide={onClose}
       centered
+      backdrop='static'
+      keyboard={false}
       dialogClassName={cx(styles.shareModal)}
     >
       <Modal.Header closeButton>

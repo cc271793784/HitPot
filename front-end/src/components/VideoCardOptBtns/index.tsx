@@ -5,7 +5,7 @@ import styles from './layout.module.css'
 
 import ShareVideoModal from 'components/ShareVideoModal'
 import ShareToHitPotModal from 'components/ShareToHitPotModal'
-import DonateToPosterModal from 'components/DonateToPosterModal'
+import DonateToUploaderModal from 'components/DonateToUploaderModal'
 import BuyIPNFTModal from 'components/BuyIPNFTModal'
 import AddHitToVideoModal from 'components/AddHitToVideoModal'
 
@@ -116,8 +116,6 @@ const VideoCardOptBtns = (props: Props) => {
     setShowDonateToPosterModal(false)
   }, [])
 
-  console.log('isFavorited', videoInfo.title, videoInfo.marked, isFavorited)
-
   return (
     <div className={cx('d-flex justify-content-between align-items-center', styles.wrap)}>
       <div className={cx('d-flex gap-2', styles.left)}>
@@ -194,7 +192,7 @@ const VideoCardOptBtns = (props: Props) => {
         />
       )}
       {showDonateToPosterModal && (
-        <DonateToPosterModal
+        <DonateToUploaderModal
           onClose={handleDonateToPosterModalClosed}
           nickname={videoInfo.creator.nickname}
           avatarUrl={videoInfo.creator.avatarImgUrl}

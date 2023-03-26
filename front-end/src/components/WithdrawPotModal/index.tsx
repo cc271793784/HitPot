@@ -56,6 +56,8 @@ const WithdrawPotModal = (props: Props) => {
       show={true}
       onHide={onClose}
       centered
+      backdrop='static'
+      keyboard={false}
       dialogClassName={cx('', styles.withdrawPotModal)}
     >
       <Modal.Header closeButton>

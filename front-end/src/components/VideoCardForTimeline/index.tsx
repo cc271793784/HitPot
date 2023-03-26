@@ -31,11 +31,9 @@ const VideoCardForTimeline = (props: Props) => {
           <span className={cx(styles.videoDuration)}>{formatDuration(videoInfo.duration)}</span>
         </div>
         <div className={cx('d-flex flex-grow-1 flex-column', styles.videoIntro)}>
-          <h4 className={cx('mb-0', styles.videoTitle)}>I Built a Split wheel Motorcycle, But will it work?</h4>
-          <h6 className={cx('mb-0', styles.videoPosterName)}>Bikes and Beards</h6>
-          <div className={cx(styles.videoDescription)}>
-            Some quick example text to build on the card title and make up the bulk of the card's content.
-          </div>
+          <h4 className={cx('mb-0', styles.videoTitle)}>{videoInfo.title}</h4>
+          <h6 className={cx('mb-0', styles.videoPosterName)}>{videoInfo.creator.nickname}</h6>
+          <div className={cx(styles.videoDescription)}>{videoInfo.description}</div>
         </div>
       </div>
       <div className={cx(styles.buttonsWrap)}>{opts}</div>

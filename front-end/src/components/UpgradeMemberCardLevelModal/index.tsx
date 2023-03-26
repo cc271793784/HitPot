@@ -44,6 +44,8 @@ const UpgradeMemberCardLevelModal = (props: Props) => {
     <Modal
       show={true}
       centered
+      backdrop='static'
+      keyboard={false}
       onHide={onClose}
     >
       <Modal.Header closeButton>

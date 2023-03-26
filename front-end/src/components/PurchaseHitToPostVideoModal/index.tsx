@@ -59,6 +59,8 @@ const PurchaseHitToPostVideoModal = (props: Props) => {
       show={true}
       onHide={onClose}
       centered
+      backdrop='static'
+      keyboard={false}
       dialogClassName={cx('', styles.purchaseHitModal)}
     >
       <Modal.Header closeButton>

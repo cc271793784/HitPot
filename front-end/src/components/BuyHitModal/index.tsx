@@ -116,6 +116,8 @@ const BuyHitModal = (props: Props) => {
       show={true}
       onHide={handleModalHide}
       centered
+      backdrop='static'
+      keyboard={false}
       dialogClassName={cx('', styles.buyHitModal)}
     >
       <Modal.Header closeButton>

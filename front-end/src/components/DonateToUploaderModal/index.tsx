@@ -2,10 +2,13 @@ import cx from 'classnames'
 import { ChangeEvent, useCallback, useState } from 'react'
 import { Button, Form, InputGroup, Modal } from 'react-bootstrap'
 import _ from 'lodash'
+import { message } from 'antd'
+import { parseEther } from 'ethers'
 
 import styles from './layout.module.css'
 
 import defaultAvatar from 'statics/images/default-avatar.svg'
+import metamask from 'wallets/metamask'
 
 interface Props {
   onClose: () => void
@@ -14,30 +17,55 @@ interface Props {
   walletAddress: string
 }
 
-const DonateToPosterModal = (props: Props) => {
+const DonateToUploaderModal = (props: Props) => {
   const { nickname, avatarUrl, walletAddress, onClose } = props
 
   const [ethCount, setEthCount] = useState('')
   const [hasValidatedEthCount, setHasValidatedEthCount] = useState(false)
   const [isEthCountValid, setIsEthCountValid] = useState(true)
+  const [isDonating, setIsDonating] = useState(false)
 
   const handleInputEthCount = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const currentValue = _.trim(e.currentTarget.value)
-    if (currentValue === '' || /^[1-9]\d*$/.test(currentValue) === true) {
+    if (currentValue === '' || /^0$|^0\.\d*$|^[1-9]\d*$|^[1-9]\d*\.\d*/.test(currentValue) === true) {
       setEthCount(currentValue)
     }
   }, [])
 
   const handleClickConfirmDonateButton = useCallback(() => {
+    let isFormValid = true
+    if (ethCount === '') {
+      isFormValid = false
+      setIsEthCountValid(false)
+    }
+
     setHasValidatedEthCount(true)
-    setIsEthCountValid(false)
-  }, [])
+    if (isFormValid === false) {
+      return
+    }
+
+    setIsDonating(true)
+    metamask
+      .sendTransaction(walletAddress, parseEther(ethCount).toString())
+      .then(() => {
+        onClose()
+        message.success('Donate successful')
+      })
+      .catch(() => {
+        message.error('Donate failed')
+      })
+      .finally(() => {
+        setIsDonating(false)
+      })
+  }, [ethCount, onClose, walletAddress])
 
   return (
     <Modal
       show={true}
       onHide={onClose}
       centered
+      backdrop='static'
+      keyboard={false}
       dialogClassName={cx(styles.donateToPosterModal)}
     >
       <Modal.Header closeButton>
@@ -73,7 +101,7 @@ const DonateToPosterModal = (props: Props) => {
                   value={ethCount}
                   placeholder=''
                   required
-                  pattern='^[1-9]\d*$'
+                  pattern='^0$|^0\.\d*$|^[1-9]\d*$|^[1-9]\d*\.\d*'
                   autoComplete='off'
                   onChange={handleInputEthCount}
                 />
@@ -88,8 +116,9 @@ const DonateToPosterModal = (props: Props) => {
             variant='primary'
             className={cx(styles.donateButton)}
             onClick={handleClickConfirmDonateButton}
+            disabled={isDonating}
           >
-            Donate
+            {isDonating ? 'Donating' : 'Donate'}
           </Button>
         </div>
       </Modal.Body>
@@ -97,4 +126,4 @@ const DonateToPosterModal = (props: Props) => {
   )
 }
 
-export default DonateToPosterModal
+export default DonateToUploaderModal

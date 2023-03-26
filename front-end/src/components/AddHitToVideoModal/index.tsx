@@ -66,6 +66,8 @@ const AddHitToVideoModal = (props: Props) => {
       show={true}
       onHide={onClose}
       centered
+      backdrop='static'
+      keyboard={false}
       dialogClassName={cx(styles.addHitToVideoModal)}
     >
       <Modal.Header closeButton>

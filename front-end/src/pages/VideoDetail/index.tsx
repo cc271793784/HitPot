@@ -21,7 +21,7 @@ import { VideoDetailInfo } from 'web-api/video'
 import * as videoApi from 'web-api/video'
 import * as userApi from 'web-api/user'
 import ShareVideoModal from 'components/ShareVideoModal'
-import DonateToPosterModal from 'components/DonateToPosterModal'
+import DonateToUploaderModal from 'components/DonateToUploaderModal'
 import ShareToHitPotModal from 'components/ShareToHitPotModal'
 
 const VideoDetail = () => {
@@ -424,13 +424,13 @@ const VideoDetail = () => {
       {showShareVideoToHitPotModal && videoDetailInfo !== null && (
         <ShareToHitPotModal
           onClose={() => {
-            setShowAddHitToVideoModal(false)
+            setShowShareVideoToHitPotModal(false)
           }}
           videoInfo={videoDetailInfo}
         />
       )}
       {showDonateToPosterModal && videoDetailInfo !== null && (
-        <DonateToPosterModal
+        <DonateToUploaderModal
           onClose={() => {
             setShowDonateToPosterModal(false)
           }}

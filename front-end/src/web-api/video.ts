@@ -239,6 +239,45 @@ export async function pageContentByMarked(
   })
 }
 
+interface PageContentByTimelineResponse {
+  code: number
+  data: {
+    items: FeedEvent[]
+    pageNo: number
+    pageSize: number
+    total: number
+    totalPages: number
+  }
+  msg: string
+}
+
+export type FeedEventList = PageContentBySubscribeResponse['data']
+
+export async function pageContentByTimeline(pageSize: number, pageNo: number): Promise<FeedEventList> {
+  return new Promise((resolve, reject) => {
+    axios
+      .get<PageContentByTimelineResponse>(`${config.getApiServer()}/api/content/page-content-by-timeline`, {
+        params: {
+          pageSize,
+          pageNo,
+        },
+        headers: {
+          Authorization: config.getAccessToken(),
+        },
+      })
+      .then((res) => {
+        if (res.data.code === config.getSuccessCode()) {
+          resolve(res.data.data)
+        } else {
+          reject(new Error(`failed: ${res.data.code}`))
+        }
+      })
+      .catch((error) => {
+        reject(error)
+      })
+  })
+}
+
 interface PageContentBySharedResponse {
   code: number
   data: VideoList
@@ -307,16 +346,25 @@ export async function pageContentByStock(
   })
 }
 
+export interface FeedEvent {
+  comment: string
+  content: VideoDetailInfo
+  contentTimelineId: number
+  createTime: string
+  shareType: number
+  user: {
+    avatarImgUrl: string
+    level: number
+    nickname: string
+    subscribe: boolean
+    userId: string
+  }
+}
+
 interface PageContentBySubscribeResponse {
   code: number
   data: {
-    items: {
-      comment: string
-      content: VideoDetailInfo
-      contentTimelineId: number
-      createTime: string
-      shareType: number
-    }[]
+    items: FeedEvent[]
     pageNo: number
     pageSize: number
     total: number
@@ -327,7 +375,7 @@ interface PageContentBySubscribeResponse {
 
 export type SubscriptionEventList = PageContentBySubscribeResponse['data']
 
-export async function pageContentBySubscribe(pageSize: number, pageNo: number): Promise<SubscriptionEventList> {
+export async function pageContentBySubscribe(pageSize: number, pageNo: number): Promise<FeedEventList> {
   return new Promise((resolve, reject) => {
     axios
       .get<PageContentBySubscribeResponse>(`${config.getApiServer()}/api/content/page-content-by-subscribe`, {

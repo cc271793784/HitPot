@@ -92,6 +92,8 @@ const ConnectMetaMaskModal = (props: Props) => {
     <Modal
       show={true}
       onHide={onClose}
+      backdrop='static'
+      keyboard={false}
     >
       <Modal.Header closeButton>
         <Modal.Title>Connect your wallet</Modal.Title>

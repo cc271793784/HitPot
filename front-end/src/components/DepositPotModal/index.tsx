@@ -67,6 +67,7 @@ const DepositPotModal = (props: Props) => {
       show={true}
       onHide={handleModalHide}
       centered
+      backdrop='static'
       dialogClassName={cx('', styles.depositPotModal)}
     >
       <Modal.Header closeButton>

@@ -13,10 +13,10 @@ import VideoCardOptBtnsForLiked from 'components/VideoCardOptBtnsForLiked'
 import VideoCardOptBtnsForFavorited from 'components/VideoCardOptBtnsForSubscription'
 import VideoCardOptBtnsForOwnedIPNFT from 'components/VideoCardOptBtnsForOwnedIPNFT'
 import VideoCardOptBtnsForMyPost from 'components/VideoCardOptBtnsForMyPost'
-import FeedEventShareVideo from 'components/FeedEventShareVideo'
+import FeedEventForTimeline from 'components/FeedEventForTimeline'
 import VideoCardOptBtnsForWatched from 'components/VideoCardOptBtnsForWatched'
 
-import type { VideoList } from 'web-api/video'
+import type { VideoList, FeedEventList } from 'web-api/video'
 import * as videoApi from 'web-api/video'
 import userStore from 'stores/user'
 import { VideoListPageSize } from '../../constants'
@@ -30,6 +30,8 @@ const Home = () => {
   const lastVideoListTypeRef = useRef<VideoListType>('liked')
   const [videoList, setVideoList] = useState<VideoList | null>(null)
   const videoListRef = useRef<VideoList | null>(null)
+  const [feedEventList, setFeedEventList] = useState<FeedEventList | null>(null)
+  const feedEventListRef = useRef<FeedEventList | null>(null)
   const [pageNo, setPageNo] = useState(1)
   const [isLoadingData, setIsLoadingData] = useState(false)
 
@@ -41,6 +43,8 @@ const Home = () => {
         lastVideoListTypeRef.current = videoListType
         setVideoList(null)
         videoListRef.current = null
+        setFeedEventList(null)
+        feedEventListRef.current = null
         setPageNo(1)
         setIsLoadingData(true)
       })
@@ -66,6 +70,24 @@ const Home = () => {
     }
     lastVideoListTypeRef.current = videoListType
   }, [])
+
+  const updateFeedEventList = useCallback(
+    (list: FeedEventList) => {
+      if (feedEventListRef.current === null) {
+        setFeedEventList(list)
+        feedEventListRef.current = list
+      } else {
+        const newList = {
+          ...list,
+          items: feedEventListRef.current.items.concat(list.items),
+        }
+        setFeedEventList(newList)
+        feedEventListRef.current = newList
+      }
+      lastVideoListTypeRef.current = videoListType
+    },
+    [videoListType],
+  )
 
   useEffect(() => {
     if (videoListType === 'liked') {
@@ -94,10 +116,10 @@ const Home = () => {
         })
     } else if (videoListType === 'timeline') {
       videoApi
-        .pageContentByShared(VideoListPageSize, pageNo)
+        .pageContentByTimeline(VideoListPageSize, pageNo)
         .then((result) => {
           if (videoListTypeRef.current === 'timeline') {
-            updateVideoList(result, 'timeline')
+            updateFeedEventList(result)
           }
         })
         .catch(() => {})
@@ -234,12 +256,14 @@ const Home = () => {
       </ul>
       <div className={cx('d-flex flex-column align-items-center', styles.videoList)}>
         {isLoadingData && <LoadingOutlined style={{ fontSize: 48, marginTop: 30 }} />}
-        {isLoadingData === false && _.isEmpty(videoList?.items) === true && (
-          <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={<span>No Data</span>}
-          ></Empty>
-        )}
+        {isLoadingData === false &&
+          _.isEmpty(videoList?.items) === true &&
+          _.isEmpty(feedEventList?.items) === true && (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={<span>No Data</span>}
+            ></Empty>
+          )}
         {videoListType === 'liked' &&
           videoList?.items.map((videoItem, i) => {
             return (
@@ -263,11 +287,11 @@ const Home = () => {
             )
           })}
         {videoListType === 'timeline' &&
-          videoList?.items.map((videoItem, i) => {
+          feedEventList?.items.map((item, i) => {
             return (
-              <FeedEventShareVideo
+              <FeedEventForTimeline
                 key={`timeline-${i}`}
-                videoInfo={videoItem}
+                event={item}
               />
             )
           })}

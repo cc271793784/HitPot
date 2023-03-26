@@ -69,6 +69,8 @@ const BuyIPNFTModal = (props: Props) => {
       show={true}
       onHide={onClose}
       centered
+      backdrop='static'
+      keyboard={false}
       dialogClassName={cx(styles.buyNftModal)}
     >
       <Modal.Header closeButton>

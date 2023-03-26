@@ -13,9 +13,9 @@ import defaultAvatar from 'statics/images/default-avatar.svg'
 import VideoCard from 'components/VideoCard'
 import VideoCardOptBtnsForRecommend from 'components/VideoCardOptBtnsForRecommend'
 import VideoCardOptBtnsForIPNFT from 'components/VideoCardOptBtnsForIPNFT'
-import FeedEventPostNewVideo from 'components/FeedEventPostNewVideo'
+import FeedEventForSubscription from 'components/FeedEventForSubscription'
 
-import { VideoList, SubscriptionEventList } from 'web-api/video'
+import { VideoList, FeedEventList } from 'web-api/video'
 import * as videoApi from 'web-api/video'
 import { VideoListPageSize } from '../../constants'
 
@@ -27,10 +27,10 @@ const OnymousLanding = () => {
   const lastVideoListTypeRef = useRef<VideoListType>('recommend')
   const [videoList, setVideoList] = useState<VideoList | null>(null)
   const videoListRef = useRef<VideoList | null>(null)
-  const [subscriptionEventList, setSubscriptionEventList] = useState<SubscriptionEventList | null>(null)
-  const subscriptionEventListRef = useRef<SubscriptionEventList | null>(null)
+  const [feedEventList, setFeedEventList] = useState<FeedEventList | null>(null)
+  const feedEventListRef = useRef<FeedEventList | null>(null)
   const [pageNo, setPageNo] = useState(1)
-  const [isLoadingData, setIsLoadingData] = useState(false)
+  const [isLoadingData, setIsLoadingData] = useState(true)
 
   const setVideoListTypeWrap = useCallback(
     (type: VideoListType) => {
@@ -40,8 +40,8 @@ const OnymousLanding = () => {
         lastVideoListTypeRef.current = videoListType
         setVideoList(null)
         videoListRef.current = null
-        setSubscriptionEventList(null)
-        subscriptionEventListRef.current = null
+        setFeedEventList(null)
+        feedEventListRef.current = null
         setPageNo(1)
         setIsLoadingData(true)
       })
@@ -68,18 +68,18 @@ const OnymousLanding = () => {
     lastVideoListTypeRef.current = videoListType
   }, [])
 
-  const updateSubscriptionEventList = useCallback(
-    (list: SubscriptionEventList) => {
-      if (subscriptionEventListRef.current === null) {
-        setSubscriptionEventList(list)
-        subscriptionEventListRef.current = list
+  const updateFeedEventList = useCallback(
+    (list: FeedEventList) => {
+      if (feedEventListRef.current === null) {
+        setFeedEventList(list)
+        feedEventListRef.current = list
       } else {
         const newList = {
           ...list,
-          items: subscriptionEventListRef.current.items.concat(list.items),
+          items: feedEventListRef.current.items.concat(list.items),
         }
-        setSubscriptionEventList(newList)
-        subscriptionEventListRef.current = newList
+        setFeedEventList(newList)
+        feedEventListRef.current = newList
       }
       lastVideoListTypeRef.current = videoListType
     },
@@ -104,7 +104,7 @@ const OnymousLanding = () => {
         .pageContentBySubscribe(VideoListPageSize, pageNo)
         .then((result) => {
           if (videoListTypeRef.current === 'subscription') {
-            updateSubscriptionEventList(result)
+            updateFeedEventList(result)
           }
         })
         .catch(() => {})
@@ -124,7 +124,7 @@ const OnymousLanding = () => {
           setIsLoadingData(false)
         })
     }
-  }, [pageNo, updateSubscriptionEventList, updateVideoList, videoListType])
+  }, [pageNo, updateFeedEventList, updateVideoList, videoListType])
 
   return (
     <div className={cx(styles.wrap)}>
@@ -171,7 +171,7 @@ const OnymousLanding = () => {
         {isLoadingData && <LoadingOutlined style={{ fontSize: 48, marginTop: 30 }} />}
         {isLoadingData === false &&
           _.isEmpty(videoList?.items) === true &&
-          _.isEmpty(subscriptionEventList?.items) === true && (
+          _.isEmpty(feedEventList?.items) === true && (
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
               description={<span>No Data</span>}
@@ -189,19 +189,11 @@ const OnymousLanding = () => {
             )
           })}
         {videoListType === 'subscription' &&
-          subscriptionEventList?.items.map((item, i) => {
+          feedEventList?.items.map((item, i) => {
             return (
-              <FeedEventPostNewVideo
+              <FeedEventForSubscription
                 key={`subscription-${i}`}
-                event={{
-                  comment: item.comment,
-                  timestamp: item.createTime,
-                  trigger: {
-                    avatarUrl: item.content.creator.avatarImgUrl || defaultAvatar,
-                    nickname: item.content.creator.nickname,
-                  },
-                }}
-                videoInfo={item.content}
+                event={item}
               />
             )
           })}
