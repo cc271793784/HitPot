@@ -8,7 +8,7 @@ import { parseEther } from 'ethers'
 import styles from './layout.module.css'
 
 import defaultAvatar from 'statics/images/default-avatar.svg'
-import metamask from 'wallets/metamask'
+import { getWallet } from 'wallets/walletProvider'
 
 interface Props {
   onClose: () => void
@@ -45,7 +45,8 @@ const DonateToUploaderModal = (props: Props) => {
     }
 
     setIsDonating(true)
-    metamask
+    const wallet = getWallet()
+    wallet
       .sendTransaction(walletAddress, parseEther(ethCount).toString())
       .then(() => {
         onClose()

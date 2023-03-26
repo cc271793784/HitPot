@@ -15,11 +15,11 @@ import iconExchangeArrows from 'statics/images/icon-exchange-arrows.svg'
 import iconMetamask from 'statics/images/icon-metamask-logo.svg'
 
 import { UserInfo } from 'typings/UserInfo'
-import metamask from 'wallets/metamask'
 import * as userApi from 'web-api/user'
 import userStore from 'stores/user'
 import config from 'web-api/config'
 import persist from 'stores/persist'
+import { getWallet } from 'wallets/walletProvider'
 
 interface Props {
   onClose: () => void
@@ -34,20 +34,24 @@ const ConnectMetaMaskModal = (props: Props) => {
   const handleClickConnect = useCallback(async () => {
     setIsConnecting(true)
 
-    if (metamask.isMetaMaskInstalled() === false) {
+    const wallet = getWallet()
+
+    console.log('wallet', wallet, wallet.isExtensionInstalled())
+
+    if (wallet.isExtensionInstalled() === false) {
       message.warning('Please install Metamask plugin first')
       onClose()
       return
     }
 
-    const [ethRequestAccountsError, as] = await to(metamask.ethRequestAccounts())
+    const [ethRequestAccountsError, as] = await to(wallet.ethRequestAccounts())
     console.log('ethRequestAccounts result', ethRequestAccountsError, as)
     if (ethRequestAccountsError !== null) {
       onClose()
       return
     }
 
-    const [ethAccountsError, accounts] = await to(metamask.ethAccounts())
+    const [ethAccountsError, accounts] = await to(wallet.ethAccounts())
     if (ethAccountsError !== null) {
       onClose()
       return
@@ -56,7 +60,7 @@ const ConnectMetaMaskModal = (props: Props) => {
     const address = accounts[0]
     const nonce = nanoid()
     const signMsg = `Welcome to HitPot!\n\nClick to sign in and accept the HitPot Terms of Service.\n\nThis request will not trigger a blockchain transaction or cost any gas fees.\n\nWallet address:\n${address}\n\nNonce:\n${nonce}`
-    const [personalSignError, signature] = await to(metamask.personalSign(signMsg, address))
+    const [personalSignError, signature] = await to(wallet.personalSign(signMsg, address))
     if (personalSignError !== null) {
       onClose()
       return

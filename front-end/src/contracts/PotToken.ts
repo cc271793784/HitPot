@@ -1,7 +1,7 @@
 import { BrowserProvider, Contract } from 'ethers'
 
 import ContractJson from './PotToken.json'
-import { POTTokenAddress } from './deployAddress'
+import { getContractAddresses } from './addressProvider'
 import { createPromiseReadyUtil } from 'utils/promiseReadyUtil'
 
 class PotToken {
@@ -14,7 +14,8 @@ class PotToken {
   async init() {
     const provider = new BrowserProvider(window.ethereum)
     const signer = await provider.getSigner()
-    const contract = new Contract(POTTokenAddress, ContractJson.abi, signer)
+    const contractAddresses = getContractAddresses()
+    const contract = new Contract(contractAddresses.POTToken, ContractJson.abi, signer)
     this.contract = contract
     this.initReadyUtil.resolve()
   }

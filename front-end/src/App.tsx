@@ -11,7 +11,6 @@ import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 
 import { createPromiseReadyUtil } from 'utils/promiseReadyUtil'
-import metamask from 'wallets/metamask'
 import * as userApi from 'web-api/user'
 import * as walletApi from 'web-api/wallet'
 import config from 'web-api/config'
@@ -19,6 +18,7 @@ import config from 'web-api/config'
 import userStore from 'stores/user'
 import walletStore from 'stores/wallet'
 import uiStore from 'stores/ui'
+import { getWallet } from 'wallets/walletProvider'
 
 import Header from 'components/Header'
 import Footer from 'components/Footer'
@@ -38,7 +38,7 @@ function App() {
   const [isAppInited, setIsAppInited] = useState(false)
 
   useEffect(() => {
-    const handleMetamaskAccountsChanged = (accounts: string[]) => {
+    const handleWalletAccountsChanged = (accounts: string[]) => {
       if (accounts.length === 0) {
         navigate('/')
         persist.removeAccessToken(userStore.walletAddress)
@@ -48,10 +48,10 @@ function App() {
       }
     }
 
-    metamask.on('accountsChanged', handleMetamaskAccountsChanged)
+    getWallet().on('accountsChanged', handleWalletAccountsChanged)
 
     return () => {
-      metamask.off('accountsChanged', handleMetamaskAccountsChanged)
+      getWallet().off('accountsChanged', handleWalletAccountsChanged)
     }
   }, [navigate])
 
@@ -60,22 +60,23 @@ function App() {
       setIsAppInited(true)
     })
 
-    const metamaskTasks = async () => {
-      const installed = metamask.isMetaMaskInstalled()
+    const walletTasks = async () => {
+      const wallet = getWallet()
+      const installed = wallet.isExtensionInstalled()
       console.log('installed', installed)
       if (installed === false) {
         appInitPromiseUtil.current.resolve()
         return
       }
 
-      const [initMetaMaskError] = await to(metamask.init())
-      console.log('initMetaMaskError', initMetaMaskError)
-      if (initMetaMaskError !== null) {
+      const [initWalletError] = await to(wallet.init())
+      console.log('initWalletError', initWalletError)
+      if (initWalletError !== null) {
         appInitPromiseUtil.current.resolve()
         return
       }
 
-      const accounts = await metamask.ethAccounts()
+      const accounts = await wallet.ethAccounts()
       console.log('accounts', accounts)
       if (accounts.length === 0) {
         appInitPromiseUtil.current.resolve()
@@ -114,7 +115,7 @@ function App() {
       appInitPromiseUtil.current.resolve()
     }
 
-    metamaskTasks()
+    walletTasks()
   }, [])
 
   return (

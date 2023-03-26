@@ -1,7 +1,7 @@
 import { BrowserProvider, Contract } from 'ethers'
 
 import ContractJson from './HitpotBridge.json'
-import { HitpotBridgeAddress } from './deployAddress'
+import { getContractAddresses } from './addressProvider'
 import { createPromiseReadyUtil } from 'utils/promiseReadyUtil'
 
 class HitpotBridge {
@@ -14,7 +14,8 @@ class HitpotBridge {
   async init() {
     const provider = new BrowserProvider(window.ethereum)
     const signer = await provider.getSigner()
-    const contract = new Contract(HitpotBridgeAddress, ContractJson.abi, signer)
+    const contractAddresses = getContractAddresses()
+    const contract = new Contract(contractAddresses.HitpotBridge, ContractJson.abi, signer)
     this.contract = contract
     this.initReadyUtil.resolve()
   }

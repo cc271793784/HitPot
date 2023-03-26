@@ -1,6 +1,6 @@
 import { parseUnits } from 'ethers'
 
-import { HitpotBridgeAddress } from './deployAddress'
+import { getContractAddresses } from './addressProvider'
 import HitpotBridge from './HitpotBridge'
 import PotToken from './PotToken'
 
@@ -8,6 +8,7 @@ class Service {
   async depositPot(count: number) {
     const potToken = new PotToken()
     const hitpotBridge = new HitpotBridge()
+    const contractAddresses = getContractAddresses()
 
     potToken.init()
     hitpotBridge.init()
@@ -16,7 +17,7 @@ class Service {
 
     const decimals = await potToken.decimals()
     const tokens = parseUnits(count.toString(), decimals)
-    await potToken.approve(HitpotBridgeAddress, tokens)
+    await potToken.approve(contractAddresses.HitpotBridge, tokens)
     await hitpotBridge.deposit(tokens)
   }
 }

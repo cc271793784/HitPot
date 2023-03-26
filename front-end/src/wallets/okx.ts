@@ -1,23 +1,23 @@
 import EventEmitter from 'events'
 import { ethers, BrowserProvider, Signer } from 'ethers'
 
-interface MetamaskWalletEvents {
+interface OkxWalletEvents {
   accountsChanged: (accounts: string[]) => void
 }
 
-declare interface MetaMaskWalletWrapper {
-  on<U extends keyof MetamaskWalletEvents>(event: U, cb: MetamaskWalletEvents[U]): this
-  off<U extends keyof MetamaskWalletEvents>(event: U, cb: MetamaskWalletEvents[U]): this
-  emit<U extends keyof MetamaskWalletEvents>(event: U, ...args: Parameters<MetamaskWalletEvents[U]>): boolean
+declare interface OkxWalletWrapper {
+  on<U extends keyof OkxWalletEvents>(event: U, cb: OkxWalletEvents[U]): this
+  off<U extends keyof OkxWalletEvents>(event: U, cb: OkxWalletEvents[U]): this
+  emit<U extends keyof OkxWalletEvents>(event: U, ...args: Parameters<OkxWalletEvents[U]>): boolean
 }
 
-class MetaMaskWalletWrapper extends EventEmitter {
+class OkxWalletWrapper extends EventEmitter {
   private provider: BrowserProvider | undefined
 
   private signer: Signer | undefined
 
   isExtensionInstalled = (): boolean => {
-    return window.ethereum?.isMetaMask === true
+    return window.okxwallet?.isOkxWallet === true
   }
 
   init = async () => {
@@ -28,7 +28,7 @@ class MetaMaskWalletWrapper extends EventEmitter {
   }
 
   getProvider = (): BrowserProvider => {
-    this.provider = this.provider ?? new ethers.BrowserProvider(window.ethereum)
+    this.provider = this.provider ?? new ethers.BrowserProvider(window.okxwallet)
     return this.provider
   }
 
@@ -106,6 +106,6 @@ class MetaMaskWalletWrapper extends EventEmitter {
   }
 }
 
-const metamaskWallet = new MetaMaskWalletWrapper()
+const metamask = new OkxWalletWrapper()
 
-export default metamaskWallet
+export default metamask

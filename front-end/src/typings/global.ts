@@ -5,5 +5,8 @@ declare global {
     ethereum: Eip1193Provider & {
       isMetaMask: boolean
     }
+    okxwallet: Eip1193Provider & {
+      isOkxWallet: boolean
+    }
   }
 }
