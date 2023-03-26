@@ -3,6 +3,7 @@ package com.hitpot.config;
 import com.hitpot.contract.HitpotBridge;
 import com.hitpot.contract.PotToken;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +14,8 @@ import org.web3j.tx.FastRawTransactionManager;
 import org.web3j.tx.gas.DefaultGasProvider;
 
 import java.math.BigInteger;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 @Slf4j
@@ -31,7 +34,11 @@ public class BlockchainConfig {
 
     @Bean
     public Web3j web3j() {
-        return Web3j.build(new HttpService(server));
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        builder.connectTimeout(3, TimeUnit.SECONDS);
+        builder.readTimeout(3, TimeUnit.SECONDS);
+        builder.retryOnConnectionFailure(true);
+        return Web3j.build(new HttpService(server, builder.build()), 5, Executors.newSingleThreadScheduledExecutor());
     }
 
     @Bean("publicKey")
