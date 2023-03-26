@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { AdInfo } from 'typings/AdInfo'
 
 import { UserLevel } from 'typings/UserLevel'
 
@@ -97,11 +98,7 @@ export async function mark(contentId: number): Promise<boolean> {
 }
 
 export interface VideoDetailInfo {
-  ads: {
-    adLink: string
-    adTitle: string
-    balanceHit: number
-  }[]
+  ads: AdInfo[]
   balanceHit: number
   contentId: number
   countIpNft: number
@@ -117,6 +114,7 @@ export interface VideoDetailInfo {
     level: UserLevel
     nickname: string
     userId: string
+    subscribe: boolean
   }
   description: string
   duration: number
@@ -311,14 +309,25 @@ export async function pageContentByStock(
 
 interface PageContentBySubscribeResponse {
   code: number
-  data: VideoList
+  data: {
+    items: {
+      comment: string
+      content: VideoDetailInfo
+      contentTimelineId: number
+      createTime: string
+      shareType: number
+    }[]
+    pageNo: number
+    pageSize: number
+    total: number
+    totalPages: number
+  }
   msg: string
 }
 
-export async function pageContentBySubscribe(
-  pageSize: number,
-  pageNo: number,
-): Promise<PageContentBySubscribeResponse['data']> {
+export type SubscriptionEventList = PageContentBySubscribeResponse['data']
+
+export async function pageContentBySubscribe(pageSize: number, pageNo: number): Promise<SubscriptionEventList> {
   return new Promise((resolve, reject) => {
     axios
       .get<PageContentBySubscribeResponse>(`${config.getApiServer()}/api/content/page-content-by-subscribe`, {
@@ -462,7 +471,7 @@ export async function release(
   priceIpNft: number,
   ipNftRatioForInvestor: number,
   maxCountIpNftForPerInvestor: number,
-): Promise<boolean> {
+): Promise<ReleaseResponse['data']> {
   return new Promise((resolve, reject) => {
     axios
       .post<ReleaseResponse>(
@@ -489,7 +498,11 @@ export async function release(
         },
       )
       .then((res) => {
-        resolve(res.data.code === config.getSuccessCode())
+        if (res.data.code === config.getSuccessCode()) {
+          resolve(res.data.data)
+        } else {
+          reject(new Error(`failed: ${res.data.code}`))
+        }
       })
       .catch((error) => {
         reject(error)
@@ -502,20 +515,20 @@ interface ShareResponse {
   data: {
     contentId: number
     comment: string
-    shareType: string
+    shareType: number // 0站内分享, 1分享到facebook, 2分享到twitter, 3发布视频
     utmContent: string
   }
   msg: string
 }
 
-export async function share(contentId: number, comment: string, shareType: number): Promise<ShareResponse['data']> {
+export async function share(comment: string, contentId: number, shareType: number): Promise<ShareResponse['data']> {
   return new Promise((resolve, reject) => {
     axios
       .post<ShareResponse>(
         `${config.getApiServer()}/api/content/share`,
         {
-          contentId,
           comment,
+          contentId,
           shareType,
         },
         {
@@ -602,12 +615,14 @@ export async function unmark(contentId: number): Promise<boolean> {
 interface WatchResponse {
   code: number
   data: {
-    success: boolean
+    ads: AdInfo[]
+    amountHit: number
+    contentId: number
   }
   msg: string
 }
 
-export async function watch(contentId: number, duration: number, utmContent: string): Promise<boolean> {
+export async function watch(contentId: number, duration: number, utmContent: string): Promise<WatchResponse['data']> {
   return new Promise((resolve, reject) => {
     axios
       .post<WatchResponse>(
@@ -624,7 +639,11 @@ export async function watch(contentId: number, duration: number, utmContent: str
         },
       )
       .then((res) => {
-        resolve(res.data.code === config.getSuccessCode())
+        if (res.data.code === config.getSuccessCode()) {
+          resolve(res.data.data)
+        } else {
+          reject(new Error(`failed: ${res.data.code}`))
+        }
       })
       .catch((error) => {
         reject(error)
@@ -632,20 +651,22 @@ export async function watch(contentId: number, duration: number, utmContent: str
   })
 }
 
-interface WatchResponse {
+interface ListMostPopularContentResponse {
   code: number
-  data: {
-    success: boolean
-  }
+  data: VideoDetailInfo[]
   msg: string
 }
 
-export async function listMostPopularContent(): Promise<any> {
+export async function listMostPopularContent(): Promise<ListMostPopularContentResponse['data']> {
   return new Promise((resolve, reject) => {
     axios
-      .get<WatchResponse>(`${config.getApiServer()}/api/content/list-most-popular-content`)
+      .get<ListMostPopularContentResponse>(`${config.getApiServer()}/api/content/list-most-popular-content`)
       .then((res) => {
-        resolve(res.data.data)
+        if (res.data.code === config.getSuccessCode()) {
+          resolve(res.data.data)
+        } else {
+          reject(new Error(`failed: ${res.data.code}`))
+        }
       })
       .catch((error) => {
         reject(error)

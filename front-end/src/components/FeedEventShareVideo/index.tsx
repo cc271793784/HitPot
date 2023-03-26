@@ -6,8 +6,15 @@ import VideoCardForTimeline from 'components/VideoCardForTimeline'
 import VideoCardOptBtnsForTimeline from 'components/VideoCardOptBtnsForTimeline'
 
 import defaultAvatar from 'statics/images/default-avatar.svg'
+import { VideoDetailInfo } from 'web-api/video'
 
-const FeedEventShareVideo = () => {
+interface Props {
+  videoInfo: VideoDetailInfo
+}
+
+const FeedEventShareVideo = (props: Props) => {
+  const { videoInfo } = props
+
   return (
     <div className={cx('d-flex')}>
       <img
@@ -24,16 +31,8 @@ const FeedEventShareVideo = () => {
           style={{
             marginTop: '10px',
           }}
-          opts={<VideoCardOptBtnsForTimeline />}
-          videoInfo={{
-            id: 0,
-            title: '',
-            description: '',
-            duration: 0,
-            creator: {
-              nickname: '',
-            },
-          }}
+          opts={<VideoCardOptBtnsForTimeline videoInfo={videoInfo} />}
+          videoInfo={videoInfo}
         />
       </div>
     </div>

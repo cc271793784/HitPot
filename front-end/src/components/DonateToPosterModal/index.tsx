@@ -1,8 +1,11 @@
 import cx from 'classnames'
 import { ChangeEvent, useCallback, useState } from 'react'
 import { Button, Form, InputGroup, Modal } from 'react-bootstrap'
+import _ from 'lodash'
 
 import styles from './layout.module.css'
+
+import defaultAvatar from 'statics/images/default-avatar.svg'
 
 interface Props {
   onClose: () => void
@@ -19,7 +22,7 @@ const DonateToPosterModal = (props: Props) => {
   const [isEthCountValid, setIsEthCountValid] = useState(true)
 
   const handleInputEthCount = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const currentValue = e.currentTarget.value
+    const currentValue = _.trim(e.currentTarget.value)
     if (currentValue === '' || /^[1-9]\d*$/.test(currentValue) === true) {
       setEthCount(currentValue)
     }
@@ -58,7 +61,7 @@ const DonateToPosterModal = (props: Props) => {
                 <div className={cx('d-flex align-items-center', styles.posterInfo)}>
                   <img
                     className={cx('', styles.avatar)}
-                    src={avatarUrl}
+                    src={avatarUrl || defaultAvatar}
                     alt=''
                   />
                   <span className={cx('', styles.nickname)}>{nickname}</span>

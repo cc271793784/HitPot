@@ -15,7 +15,7 @@ class MetaMaskWrapper extends EventEmitter {
   private provider: BrowserProvider | undefined
 
   isMetaMaskInstalled = (): boolean => {
-    return window.ethereum.isMetaMask === true
+    return window.ethereum?.isMetaMask === true
   }
 
   init = async () => {

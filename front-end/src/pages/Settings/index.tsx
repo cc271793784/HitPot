@@ -5,6 +5,7 @@ import cx from 'classnames'
 import { observer } from 'mobx-react-lite'
 import { ChangeEvent, useCallback, useState } from 'react'
 import { Button, Form } from 'react-bootstrap'
+import _ from 'lodash'
 
 import userStore from 'stores/user'
 import * as materialApi from 'web-api/material'
@@ -39,7 +40,7 @@ const Settings = () => {
   }, [])
 
   const handleInputNickname = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const currentValue = e.currentTarget.value
+    const currentValue = _.trim(e.currentTarget.value)
     setNickname(currentValue)
   }, [])
 
@@ -55,8 +56,11 @@ const Settings = () => {
     setIsSaving(true)
     userApi
       .update(uploadedAvatarFilename, nickname, feedRecommendStrategy)
-      .then(() => {
+      .then((result) => {
         message.success('Updated')
+        userStore.updateUserInfo({
+          ...result,
+        })
       })
       .catch(() => {
         message.error('Update failed')

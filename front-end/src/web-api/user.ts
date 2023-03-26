@@ -136,7 +136,7 @@ export async function update(
   avatarImg: string,
   nickname: string,
   feedSettingType: FeedRecommendStrategy,
-): Promise<boolean> {
+): Promise<UpdateResponse['data']> {
   return new Promise((resolve, reject) => {
     axios
       .post<UpdateResponse>(
@@ -153,7 +153,11 @@ export async function update(
         },
       )
       .then((res) => {
-        resolve(res.data.code === config.getSuccessCode())
+        if (res.data.code === config.getSuccessCode()) {
+          resolve(res.data.data)
+        } else {
+          reject(new Error(`failed: ${res.data.code}`))
+        }
       })
       .catch((error) => {
         reject(error)

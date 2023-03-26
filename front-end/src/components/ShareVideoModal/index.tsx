@@ -2,6 +2,7 @@ import { Modal } from 'react-bootstrap'
 import cx from 'classnames'
 import { useCallback } from 'react'
 import { message } from 'antd'
+import copy from 'copy-text-to-clipboard'
 
 import styles from './layout.module.css'
 
@@ -10,32 +11,45 @@ import iconUrlLink from 'statics/images/icon-url-link.svg'
 import logoTwitter from 'statics/images/icon-twitter-logo.svg'
 import logoFb from 'statics/images/icon-facebook-logo.svg'
 
+import { share, VideoDetailInfo } from 'web-api/video'
+
 interface Props {
   onClose: () => void
   onSelectShareToHitPot: () => void
-  videoId: number
-  videoTitle: string
+  videoInfo: VideoDetailInfo
 }
 
 const ShareVideoModal = (props: Props) => {
-  const { videoId, videoTitle, onClose, onSelectShareToHitPot } = props
+  const { videoInfo, onClose, onSelectShareToHitPot } = props
+
+  const handleClickShareToHitPot = useCallback(() => {
+    onSelectShareToHitPot()
+  }, [onSelectShareToHitPot])
 
   const handleClickCopyLink = useCallback(() => {
+    copy(`https://${window.location.host}/video/${videoInfo.contentId}`)
     onClose()
     message.success('Link copied to clipboard!')
-  }, [onClose])
+  }, [onClose, videoInfo.contentId])
 
   const handleClickShareToTwitter = useCallback(() => {
-    window.open(
-      `https://twitter.com/intent/tweet?text=${videoTitle}%0Ahttps://${window.location.host}/video/${videoId}`,
-      '_blank',
-    )
-  }, [videoId, videoTitle])
+    share('', videoInfo.contentId, 2)
+      .then((result) => {
+        const text = `${videoInfo.title}\n${window.location.host}/video/${videoInfo.contentId}?utmContent=${result.utmContent}`
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank')
+      })
+      .catch(() => {})
+    onClose()
+  }, [onClose, videoInfo.contentId, videoInfo.title])
 
   const handleClickShareToFacebook = useCallback(() => {
+    share('', videoInfo.contentId, 1)
+      .then((result) => {})
+      .catch(() => {})
+    copy(`https://${window.location.host}/video/${videoInfo.contentId}`)
     onClose()
     message.success('Link copied to clipboard!')
-  }, [onClose])
+  }, [onClose, videoInfo.contentId])
 
   return (
     <Modal
@@ -55,7 +69,7 @@ const ShareVideoModal = (props: Props) => {
               width={64}
               className={styles.logo}
               alt=''
-              onClick={onSelectShareToHitPot}
+              onClick={handleClickShareToHitPot}
             />
             <span className={cx(styles.logoTitle)}>HitPot</span>
           </div>

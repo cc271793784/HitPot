@@ -34,6 +34,12 @@ const ConnectMetaMaskModal = (props: Props) => {
   const handleClickConnect = useCallback(async () => {
     setIsConnecting(true)
 
+    if (metamask.isMetaMaskInstalled() === false) {
+      message.warning('Please install Metamask plugin first')
+      onClose()
+      return
+    }
+
     const [ethRequestAccountsError, as] = await to(metamask.ethRequestAccounts())
     console.log('ethRequestAccounts result', ethRequestAccountsError, as)
     if (ethRequestAccountsError !== null) {
@@ -75,6 +81,7 @@ const ConnectMetaMaskModal = (props: Props) => {
       message.error(`获取账号信息失败（${userDetailError.response?.status ?? 'unknown'}）`)
       return
     }
+    userStore.walletAddress = address
     userStore.updateUserInfo(userDetail)
     userStore.isLoggedIn = true
 

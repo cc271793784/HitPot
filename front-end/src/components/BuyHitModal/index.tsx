@@ -1,6 +1,7 @@
 import { Button, Form, InputGroup, Modal } from 'react-bootstrap'
 import cx from 'classnames'
 import { ChangeEvent, SyntheticEvent, useCallback, useEffect, useState } from 'react'
+import _ from 'lodash'
 
 import styles from './layout.module.css'
 
@@ -26,7 +27,7 @@ const BuyHitModal = (props: Props) => {
 
   const handleInputHitCount = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      const newHitCount = e.currentTarget.value
+      const newHitCount = _.trim(e.currentTarget.value)
       if (newHitCount === '' || /^[1-9]\d*$/.test(newHitCount) === true) {
         setHitCount(newHitCount)
         setTotalPrice(parseInt(newHitCount || '0', 10) * parseFloat(hitPrice || '0'))
@@ -37,7 +38,7 @@ const BuyHitModal = (props: Props) => {
 
   const handleInputHitPrice = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      const newHitPrice = e.currentTarget.value
+      const newHitPrice = _.trim(e.currentTarget.value)
       if (newHitPrice === '' || /^0$|^0\.\d*$|^[1-9]\d*$|^[1-9]\d*\.\d*$/.test(newHitPrice) === true) {
         setHitPrice(newHitPrice)
         setTotalPrice(parseInt(hitCount || '0', 10) * parseFloat(newHitPrice || '0'))
@@ -50,22 +51,22 @@ const BuyHitModal = (props: Props) => {
     (e: SyntheticEvent) => {
       e.preventDefault()
 
-      let formInputsValid = true
+      let isFormInputsValid = true
       if (hitCount === '') {
-        formInputsValid = false
+        isFormInputsValid = false
         setIsHitCountValid(false)
       } else {
         setIsHitCountValid(true)
       }
       if (hitPrice === '') {
-        formInputsValid = false
+        isFormInputsValid = false
         setIsHitPriceValid(false)
       } else {
         setIsHitPriceValid(true)
       }
-      setHasValidatedBuyHit(true)
 
-      if (formInputsValid === false) {
+      setHasValidatedBuyHit(true)
+      if (isFormInputsValid === false) {
         return
       }
 
@@ -74,7 +75,9 @@ const BuyHitModal = (props: Props) => {
         .exchangeHit(parseInt(hitCount, 10), parseFloat(hitPrice))
         .then(() => {
           onClose()
-          syncWalletInfoFromWebApi()
+          setTimeout(() => {
+            syncWalletInfoFromWebApi()
+          }, 1000)
           message.success(`Successfully purchased ${hitCount} HIT`)
         })
         .catch(() => {

@@ -45,6 +45,7 @@
 
 .videoPoster {
   object-fit: cover;
+  cursor: pointer;
 }
 
 .nftCount {

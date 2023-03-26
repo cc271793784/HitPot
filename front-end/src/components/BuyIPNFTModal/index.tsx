@@ -1,43 +1,68 @@
 import cx from 'classnames'
 import { ChangeEvent, useCallback, useState } from 'react'
 import { Button, Form, Modal } from 'react-bootstrap'
+import _ from 'lodash'
 
 import styles from './layout.module.css'
 
+import { VideoDetailInfo } from 'web-api/video'
+import { purchaseContentNFT } from 'web-api/wallet'
+import { message } from 'antd'
+
 interface Props {
   onClose: () => void
-  price: number
-  restVolume: number
-  totalVolume: number
+  videoInfo: VideoDetailInfo
 }
 
 const BuyIPNFTModal = (props: Props) => {
-  const { price, restVolume, totalVolume, onClose } = props
+  const { videoInfo, onClose } = props
 
   const [nftCount, setNFTCount] = useState('')
-  const [hasValidatedNFTCount, setHasValidatedNFTCount] = useState(false)
+  const [hasValidatedForm, setHasValidatedForm] = useState(false)
   const [isNFTCountValid, setIsNFTCountValid] = useState(true)
   const [totalPrice, setTotalPrice] = useState(0)
+  const [isPurchasing, setIsPurchasing] = useState(false)
 
   const handleInputNFTCount = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      const currentValue = e.currentTarget.value
+      const currentValue = _.trim(e.currentTarget.value)
       if (currentValue === '' || /^[1-9]\d*$/.test(currentValue) === true) {
         setNFTCount(currentValue)
         if (currentValue !== '') {
-          setTotalPrice(parseInt(currentValue, 10) * price)
+          setTotalPrice(parseInt(currentValue, 10) * videoInfo.priceIpNft)
         } else {
           setTotalPrice(0)
         }
       }
     },
-    [price],
+    [videoInfo.priceIpNft],
   )
 
   const handleClickConfirmPurchaseButton = useCallback(() => {
-    setHasValidatedNFTCount(true)
-    setIsNFTCountValid(false)
-  }, [])
+    let isFormValid = true
+    if (nftCount === '') {
+      isFormValid = false
+      setIsNFTCountValid(false)
+    }
+
+    setHasValidatedForm(true)
+    if (isFormValid === false) {
+      return
+    }
+
+    setIsPurchasing(true)
+    purchaseContentNFT(totalPrice, videoInfo.contentId, parseInt(nftCount, 10))
+      .then(() => {
+        onClose()
+        message.success('Buy successful')
+      })
+      .catch(() => {
+        message.error('Buy failed')
+      })
+      .finally(() => {
+        setIsPurchasing(false)
+      })
+  }, [nftCount, onClose, totalPrice, videoInfo.contentId])
 
   return (
     <Modal
@@ -47,7 +72,7 @@ const BuyIPNFTModal = (props: Props) => {
       dialogClassName={cx(styles.buyNftModal)}
     >
       <Modal.Header closeButton>
-        <Modal.Title>Donate</Modal.Title>
+        <Modal.Title>Buy IP NFT</Modal.Title>
       </Modal.Header>
       <Modal.Body className={cx('')}>
         <div
@@ -56,18 +81,18 @@ const BuyIPNFTModal = (props: Props) => {
           <div className={cx('w-100 d-flex justify-content-between')}>
             <div className={cx('d-flex flex-column align-items-start', styles.nftPriceWrap)}>
               <div className={cx(styles.floorPriceTitle)}>floor price</div>
-              <div className={cx('h4 mt-1 mb-0', styles.floorPrice)}>400 POT</div>
+              <div className={cx('h4 mt-1 mb-0', styles.floorPrice)}>{videoInfo.priceIpNft} POT</div>
             </div>
             <div className={cx('d-flex flex-column align-items-start', styles.nftVolumeWrap)}>
               <div className={cx(styles.volumeTitle)}>volume</div>
               <div className={cx('d-flex  mt-1', styles.volume)}>
-                {restVolume === 0 ? (
+                {videoInfo.countIpNftLeft === 0 ? (
                   <div className={cx('h4 mb-0', styles.totalVolume)}>SOLD OUT</div>
                 ) : (
                   <>
-                    <div className={cx('h4 mb-0', styles.restVolume)}>{restVolume}</div>
+                    <div className={cx('h4 mb-0', styles.restVolume)}>{videoInfo.countIpNftLeft}</div>
                     <div className={cx('h4 mb-0', styles.restVolume)}>&nbsp;/&nbsp;</div>
-                    <div className={cx('h4 mb-0', styles.totalVolume)}>{totalVolume}</div>
+                    <div className={cx('h4 mb-0', styles.totalVolume)}>{videoInfo.countIpNft}</div>
                   </>
                 )}
               </div>
@@ -75,13 +100,13 @@ const BuyIPNFTModal = (props: Props) => {
           </div>
           <Form
             noValidate
-            validated={hasValidatedNFTCount}
+            validated={hasValidatedForm}
             className={cx('w-100', styles.formWrap)}
           >
             <Form.Group className={cx('')}>
               <Form.Label htmlFor='input-eth-count'>
                 <span className={cx('f-flex align-items-center')}>
-                  IP NFT volume (max <span className={cx(styles.maxVolume)}>50</span>)
+                  IP NFT volume (max <span className={cx(styles.maxVolume)}>{videoInfo.countMaxLimitPerInvestor}</span>)
                 </span>
               </Form.Label>
               <Form.Control
@@ -91,7 +116,7 @@ const BuyIPNFTModal = (props: Props) => {
                 required
                 pattern='^[1-9]\d*$'
                 autoComplete='off'
-                disabled={restVolume === 0}
+                disabled={videoInfo.countIpNftLeft === 0 || isPurchasing}
                 onChange={handleInputNFTCount}
               />
               {isNFTCountValid === false && (
@@ -105,9 +130,9 @@ const BuyIPNFTModal = (props: Props) => {
               variant='primary'
               className={cx(styles.purchaseButton)}
               onClick={handleClickConfirmPurchaseButton}
-              disabled={restVolume === 0}
+              disabled={videoInfo.countIpNftLeft === 0 || isPurchasing}
             >
-              Purchase
+              {isPurchasing ? 'Purchasing' : 'Purchase'}
             </Button>
           </div>
         </div>

@@ -35,3 +35,34 @@
   line-height: 150%;
   color: #212529;
 }
+
+.adWrap {
+  position: absolute;
+  bottom: 10px;
+  left: 0px;
+  z-index: 3;
+  padding: 0 10px;
+  max-width: 100%;
+}
+
+.adIcon {
+}
+
+.adLink {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 150%;
+  text-decoration-line: underline;
+  color: #f8f8f8;
+  word-break: break-all;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+}
+.adLink:hover {
+  color: #e8e8e8;
+}

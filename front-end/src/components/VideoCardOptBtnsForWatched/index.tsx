@@ -7,8 +7,8 @@ interface Props {
   videoInfo: VideoDetailInfo
 }
 
-const VideoCardOptBtnsForMyPost = (props: Props) => {
+const VideoCardOptBtnsForWatched = (props: Props) => {
   return <VideoCardOptBtns {...props} />
 }
 
-export default VideoCardOptBtnsForMyPost
+export default VideoCardOptBtnsForWatched

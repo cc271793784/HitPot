@@ -9,22 +9,18 @@ import DonateToPosterModal from 'components/DonateToPosterModal'
 import BuyIPNFTModal from 'components/BuyIPNFTModal'
 import AddHitToVideoModal from 'components/AddHitToVideoModal'
 
+import { VideoDetailInfo } from 'web-api/video'
 import * as videoApi from 'web-api/video'
-import userStore from 'stores/user'
-import { observer } from 'mobx-react-lite'
 
 interface Props {
-  videoId: number
-  videoTitle: string
-  liked: boolean
-  favorited: boolean
+  videoInfo: VideoDetailInfo
 }
 
 const VideoCardOptBtns = (props: Props) => {
-  const { videoId, liked, favorited, videoTitle } = props
+  const { videoInfo } = props
 
-  const [isLiked, setLiked] = useState(liked)
-  const [isFavorited, setFavorited] = useState(favorited)
+  const [isLiked, setLiked] = useState(videoInfo.liked)
+  const [isFavorited, setFavorited] = useState(videoInfo.marked)
   const [showShareVideoModal, setShowShareVideoModal] = useState(false)
   const [showShareVideoToHitPotModal, setShowShareVideoToHitPotModal] = useState(false)
   const [showDonateToPosterModal, setShowDonateToPosterModal] = useState(false)
@@ -35,7 +31,7 @@ const VideoCardOptBtns = (props: Props) => {
     if (isLiked === false) {
       setLiked(true)
       videoApi
-        .like(videoId)
+        .like(videoInfo.contentId)
         .then((result) => {
           setLiked(result === true)
         })
@@ -45,7 +41,7 @@ const VideoCardOptBtns = (props: Props) => {
     } else {
       setLiked(false)
       videoApi
-        .unlike(videoId)
+        .unlike(videoInfo.contentId)
         .then((result) => {
           setLiked(result === false)
         })
@@ -53,13 +49,13 @@ const VideoCardOptBtns = (props: Props) => {
           setLiked(true)
         })
     }
-  }, [isLiked, videoId])
+  }, [isLiked, videoInfo.contentId])
 
   const handleClickFavoriteButton = useCallback(() => {
     if (isFavorited === false) {
       setFavorited(true)
       videoApi
-        .mark(videoId)
+        .mark(videoInfo.contentId)
         .then((result) => {
           setFavorited(result === true)
         })
@@ -67,9 +63,9 @@ const VideoCardOptBtns = (props: Props) => {
           setFavorited(false)
         })
     } else {
-      setLiked(false)
+      setFavorited(false)
       videoApi
-        .unmark(videoId)
+        .unmark(videoInfo.contentId)
         .then((result) => {
           setFavorited(result === false)
         })
@@ -77,7 +73,7 @@ const VideoCardOptBtns = (props: Props) => {
           setFavorited(true)
         })
     }
-  }, [isFavorited, videoId])
+  }, [isFavorited, videoInfo.contentId])
 
   const handleClickBuyIPNFTButton = useCallback(() => {
     setShowBuyIPNFTModal(true)
@@ -119,6 +115,8 @@ const VideoCardOptBtns = (props: Props) => {
   const handleDonateToPosterModalClosed = useCallback(() => {
     setShowDonateToPosterModal(false)
   }, [])
+
+  console.log('isFavorited', videoInfo.title, videoInfo.marked, isFavorited)
 
   return (
     <div className={cx('d-flex justify-content-between align-items-center', styles.wrap)}>
@@ -173,45 +171,38 @@ const VideoCardOptBtns = (props: Props) => {
       {showBuyIPNFTModal && (
         <BuyIPNFTModal
           onClose={handleBuyIPNFTModalClosed}
-          restVolume={0}
-          totalVolume={1000}
-          price={400}
+          videoInfo={videoInfo}
         />
       )}
       {showAddHitToVideoModal && (
         <AddHitToVideoModal
           onClose={handleAddHitToVideoModalClosed}
-          videoId={videoId}
+          videoInfo={videoInfo}
         />
       )}
       {showShareVideoModal && (
         <ShareVideoModal
           onClose={handleShareVideoModalClosed}
           onSelectShareToHitPot={handleSelectShareToHitPot}
-          videoId={videoId}
-          videoTitle={videoTitle}
+          videoInfo={videoInfo}
         />
       )}
       {showShareVideoToHitPotModal && (
         <ShareToHitPotModal
           onClose={handleShareVideoToHitPotModalClosed}
-          videoId={videoId}
-          videoTitle={videoTitle}
-          videoThumbnail={''}
-          videoUploaderNickname={''}
-          videoDescription={''}
+          videoInfo={videoInfo}
         />
       )}
       {showDonateToPosterModal && (
         <DonateToPosterModal
           onClose={handleDonateToPosterModalClosed}
-          nickname={userStore.userInfo.nickname}
-          avatarUrl={userStore.userInfo.avatarImgUrl}
-          walletAddress={userStore.walletAddress}
+          nickname={videoInfo.creator.nickname}
+          avatarUrl={videoInfo.creator.avatarImgUrl}
+          walletAddress={videoInfo.creator.userId}
         />
       )}
     </div>
   )
 }
 
-export default observer(VideoCardOptBtns)
+export default VideoCardOptBtns

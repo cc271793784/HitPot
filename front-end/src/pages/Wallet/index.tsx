@@ -3,6 +3,7 @@ import Card from 'react-bootstrap/Card'
 import Button from 'react-bootstrap/Button'
 import { observer } from 'mobx-react-lite'
 import { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import styles from './layout.module.css'
 
@@ -15,6 +16,7 @@ import userStore from 'stores/user'
 import { syncWalletInfoFromWebApi } from 'stores/walletHelpers'
 
 const Wallet = () => {
+  const navigate = useNavigate()
   const [showDepositPotModal, setShowDepositPotModal] = useState(false)
   const [showWithdrawPotModal, setShowWithdrawPotModal] = useState(false)
   const [showBuyHitModal, setShowBuyHitModal] = useState(false)
@@ -43,7 +45,15 @@ const Wallet = () => {
     setShowBuyHitModal(false)
   }, [])
 
+  const handleClickIPNft = useCallback(
+    (contentId: number) => {
+      navigate(`/video/${contentId}`)
+    },
+    [navigate],
+  )
+
   useEffect(() => {
+    syncWalletInfoFromWebApi()
     const timer = setInterval(() => {
       syncWalletInfoFromWebApi()
     }, 30 * 1000)
@@ -105,10 +115,13 @@ const Wallet = () => {
                 >
                   <img
                     className={cx(styles.videoPoster)}
-                    src={nftInfo.coverImage}
+                    src={nftInfo.coverImgUrl}
                     width={209}
                     height={117}
                     alt=''
+                    onClick={() => {
+                      handleClickIPNft(nftInfo.contentId)
+                    }}
                   />
                   <span className={cx('h5 text-nowrap text-truncate', styles.nftCount)}>
                     {nftInfo.amount ?? 0} IP NFTs

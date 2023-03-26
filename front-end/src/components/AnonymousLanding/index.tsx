@@ -8,14 +8,20 @@ import icoLogo from 'statics/images/icon-logo-dark.svg'
 
 import { VideoDetailInfo } from 'web-api/video'
 import * as videoApi from 'web-api/video'
+import uiStore from 'stores/ui'
+import { formatDuration } from 'utils/formatDuration'
 
 export default function AnonymousLanding() {
   const [isDataInited, setIsDataInited] = useState(false)
   const [videoList, setVideoList] = useState<VideoDetailInfo[]>([])
 
-  const handleClickWatchButton = useCallback(() => {}, [])
+  const handleClickWatchButton = useCallback(() => {
+    uiStore.shouldShowConnectWalletModal = true
+  }, [])
 
-  const handleClickSubscribeButton = useCallback(() => {}, [])
+  const handleClickSubscribeButton = useCallback(() => {
+    uiStore.shouldShowConnectWalletModal = true
+  }, [])
 
   useEffect(() => {
     videoApi
@@ -63,7 +69,7 @@ export default function AnonymousLanding() {
                     height={192}
                     alt='video cover'
                   />
-                  <span className={cx(styles.videoDuration)}>{videoItem.duration}</span>
+                  <span className={cx(styles.videoDuration)}>{formatDuration(videoItem.duration)}</span>
                 </div>
                 <div className={cx(styles.videoInfoWrap)}>
                   <div className={cx(styles.videoTitle)}>{videoItem.title}</div>
@@ -79,7 +85,7 @@ export default function AnonymousLanding() {
                     </button>
                     <button
                       type='button'
-                      className={cx('btn btn-primary')}
+                      className={cx('btn', 'btn-primary')}
                       onClick={handleClickSubscribeButton}
                     >
                       Subscribe

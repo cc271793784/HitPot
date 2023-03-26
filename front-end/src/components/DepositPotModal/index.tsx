@@ -2,6 +2,7 @@ import { Button, Form, InputGroup, Modal } from 'react-bootstrap'
 import cx from 'classnames'
 import { ChangeEvent, SyntheticEvent, useCallback, useRef, useState } from 'react'
 import { message } from 'antd'
+import _ from 'lodash'
 
 import styles from './layout.module.css'
 
@@ -22,7 +23,7 @@ const DepositPotModal = (props: Props) => {
   const [isDepositing, setIsDepositing] = useState(false)
 
   const handleInputDepositPotCount = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const currentValue = e.currentTarget.value
+    const currentValue = _.trim(e.currentTarget.value)
     if (currentValue === '' || /^[1-9]\d*$/.test(currentValue) === true) {
       setDepositPotCount(currentValue)
     }
@@ -40,15 +41,14 @@ const DepositPotModal = (props: Props) => {
         contractServiceRef.current
           .depositPot(count)
           .then(() => {
-            message.success('Deposit successfully')
+            onClose()
+            message.success('Deposit successful')
             syncWalletInfoFromWebApi()
           })
           .catch((e) => {
             message.error('Deposit failed')
           })
-          .finally(() => {
-            onClose()
-          })
+          .finally(() => {})
       }
       setHasValidatedDepositPotCount(true)
     },

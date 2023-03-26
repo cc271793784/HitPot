@@ -2,6 +2,7 @@ import { Button, Form, InputGroup, Modal } from 'react-bootstrap'
 import cx from 'classnames'
 import { ChangeEvent, SyntheticEvent, useCallback, useState } from 'react'
 import { message } from 'antd'
+import _ from 'lodash'
 
 import styles from './layout.module.css'
 
@@ -20,7 +21,7 @@ const WithdrawPotModal = (props: Props) => {
   const [hasValidatedWithdrawPotCount, setHasValidatedWithdrawPotCount] = useState(false)
 
   const handleInputWithdrawPotCount = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const currentValue = e.currentTarget.value
+    const currentValue = _.trim(e.currentTarget.value)
     if (currentValue === '' || /^[1-9]\d*$/.test(currentValue) === true) {
       setWithdrawPotCount(currentValue)
     }
@@ -36,32 +37,24 @@ const WithdrawPotModal = (props: Props) => {
         walletApi
           .withdraw(parseInt(withdrawPotCount, 10))
           .then(() => {
-            message.success('Withdraw successfully')
+            onClose()
+            message.success('Withdraw successful')
             syncWalletInfoFromWebApi()
           })
           .catch(() => {
             message.error('Withdraw failed')
           })
-          .finally(() => {
-            onClose()
-          })
+          .finally(() => {})
       }
       setHasValidatedWithdrawPotCount(true)
     },
     [onClose, withdrawPotCount],
   )
 
-  const handleModalHide = useCallback(() => {
-    onClose()
-    setWithdrawPotCount('')
-    setIsWithdrawCountValid(true)
-    setHasValidatedWithdrawPotCount(false)
-  }, [onClose])
-
   return (
     <Modal
       show={true}
-      onHide={handleModalHide}
+      onHide={onClose}
       centered
       dialogClassName={cx('', styles.withdrawPotModal)}
     >

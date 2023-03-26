@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite'
 import _ from 'lodash'
 import { Empty } from 'antd'
 import { Button } from 'react-bootstrap'
+import { flushSync } from 'react-dom'
 
 import styles from './layout.module.css'
 
@@ -13,11 +14,13 @@ import VideoCardOptBtnsForFavorited from 'components/VideoCardOptBtnsForSubscrip
 import VideoCardOptBtnsForOwnedIPNFT from 'components/VideoCardOptBtnsForOwnedIPNFT'
 import VideoCardOptBtnsForMyPost from 'components/VideoCardOptBtnsForMyPost'
 import FeedEventShareVideo from 'components/FeedEventShareVideo'
+import VideoCardOptBtnsForWatched from 'components/VideoCardOptBtnsForWatched'
 
 import type { VideoList } from 'web-api/video'
 import * as videoApi from 'web-api/video'
 import userStore from 'stores/user'
 import { VideoListPageSize } from '../../constants'
+import { LoadingOutlined } from '@ant-design/icons'
 
 type VideoListType = 'liked' | 'favorited' | 'timeline' | 'my ipnft' | 'my post' | 'history'
 
@@ -28,12 +31,19 @@ const Home = () => {
   const [videoList, setVideoList] = useState<VideoList | null>(null)
   const videoListRef = useRef<VideoList | null>(null)
   const [pageNo, setPageNo] = useState(1)
+  const [isLoadingData, setIsLoadingData] = useState(false)
 
   const setVideoListTypeWrap = useCallback(
     (type: VideoListType) => {
-      setVideoListType(type)
-      videoListTypeRef.current = type
-      lastVideoListTypeRef.current = videoListType
+      flushSync(() => {
+        setVideoListType(type)
+        videoListTypeRef.current = type
+        lastVideoListTypeRef.current = videoListType
+        setVideoList(null)
+        videoListRef.current = null
+        setPageNo(1)
+        setIsLoadingData(true)
+      })
     },
     [videoListType],
   )
@@ -67,6 +77,9 @@ const Home = () => {
           }
         })
         .catch(() => {})
+        .finally(() => {
+          setIsLoadingData(false)
+        })
     } else if (videoListType === 'favorited') {
       videoApi
         .pageContentByMarked(VideoListPageSize, pageNo)
@@ -76,6 +89,9 @@ const Home = () => {
           }
         })
         .catch(() => {})
+        .finally(() => {
+          setIsLoadingData(false)
+        })
     } else if (videoListType === 'timeline') {
       videoApi
         .pageContentByShared(VideoListPageSize, pageNo)
@@ -85,6 +101,9 @@ const Home = () => {
           }
         })
         .catch(() => {})
+        .finally(() => {
+          setIsLoadingData(false)
+        })
     } else if (videoListType === 'my ipnft') {
       videoApi
         .pageContentByStock(VideoListPageSize, pageNo)
@@ -94,6 +113,9 @@ const Home = () => {
           }
         })
         .catch(() => {})
+        .finally(() => {
+          setIsLoadingData(false)
+        })
     } else if (videoListType === 'my post') {
       videoApi
         .pageMyContent(VideoListPageSize, pageNo)
@@ -103,6 +125,9 @@ const Home = () => {
           }
         })
         .catch(() => {})
+        .finally(() => {
+          setIsLoadingData(false)
+        })
     } else if (videoListType === 'history') {
       videoApi
         .pageContentByWatched(VideoListPageSize, pageNo)
@@ -112,14 +137,11 @@ const Home = () => {
           }
         })
         .catch(() => {})
+        .finally(() => {
+          setIsLoadingData(false)
+        })
     }
   }, [pageNo, updateVideoList, videoListType])
-
-  console.log(
-    '(videoList?.totalPages || 0) > (videoList?.pageNo || 0)',
-    videoList?.totalPages || 0,
-    videoList?.pageNo || 0,
-  )
 
   return (
     <div className={cx(styles.wrap)}>
@@ -211,139 +233,74 @@ const Home = () => {
         </li>
       </ul>
       <div className={cx('d-flex flex-column align-items-center', styles.videoList)}>
-        {_.isEmpty(videoList?.items) === true && (
+        {isLoadingData && <LoadingOutlined style={{ fontSize: 48, marginTop: 30 }} />}
+        {isLoadingData === false && _.isEmpty(videoList?.items) === true && (
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={<span>暂无视频</span>}
+            description={<span>No Data</span>}
           ></Empty>
         )}
         {videoListType === 'liked' &&
-          _.isEmpty(videoList?.items) === false &&
           videoList?.items.map((videoItem, i) => {
             return (
               <VideoCard
                 key={`liked-${i}`}
                 showPlayTipMask
-                videoInfo={{
-                  id: videoItem.contentId,
-                  title: videoItem.title,
-                  description: videoItem.description,
-                  watcherLevel: videoItem.watcherLevel,
-                  balanceHit: videoItem.balanceHit,
-                  duration: videoItem.duration,
-                  rewardPercentForViewer: 10,
-                  rewardPercentForSharing: 10,
-                  creator: {
-                    avatarUrl: videoItem.creator.avatarImgUrl,
-                    nickname: videoItem.creator.nickname,
-                    userId: videoItem.creator.userId,
-                  },
-                }}
-                opts={
-                  <VideoCardOptBtnsForLiked
-                    videoId={videoItem.contentId}
-                    videoTitle={videoItem.title}
-                    liked={videoItem.liked}
-                    favorited={videoItem.marked}
-                  />
-                }
+                videoInfo={videoItem}
+                opts={<VideoCardOptBtnsForLiked videoInfo={videoItem} />}
               />
             )
           })}
         {videoListType === 'favorited' &&
-          _.isEmpty(videoList?.items) === false &&
           videoList?.items.map((videoItem, i) => {
             return (
               <VideoCard
                 key={`favorited-${i}`}
                 showPlayTipMask
-                videoInfo={{
-                  id: videoItem.contentId,
-                  title: videoItem.title,
-                  description: videoItem.description,
-                  watcherLevel: videoItem.watcherLevel,
-                  balanceHit: videoItem.balanceHit,
-                  duration: videoItem.duration,
-                  rewardPercentForViewer: 10,
-                  rewardPercentForSharing: 10,
-                  creator: {
-                    avatarUrl: videoItem.creator.avatarImgUrl,
-                    nickname: videoItem.creator.nickname,
-                    userId: videoItem.creator.userId,
-                  },
-                }}
-                opts={
-                  <VideoCardOptBtnsForFavorited
-                    videoId={videoItem.contentId}
-                    videoTitle={videoItem.title}
-                    liked={videoItem.liked}
-                    favorited={videoItem.marked}
-                  />
-                }
+                videoInfo={videoItem}
+                opts={<VideoCardOptBtnsForFavorited videoInfo={videoItem} />}
               />
             )
           })}
         {videoListType === 'timeline' &&
-          _.isEmpty(videoList?.items) === false &&
           videoList?.items.map((videoItem, i) => {
-            return <FeedEventShareVideo key={`timeline-${i}`} />
+            return (
+              <FeedEventShareVideo
+                key={`timeline-${i}`}
+                videoInfo={videoItem}
+              />
+            )
           })}
         {videoListType === 'my ipnft' &&
-          _.isEmpty(videoList?.items) === false &&
           videoList?.items.map((videoItem, i) => {
             return (
               <VideoCard
                 key={`my-ipnft-${i}`}
                 showPlayTipMask
-                videoInfo={{
-                  id: videoItem.contentId,
-                  title: videoItem.title,
-                  description: videoItem.description,
-                  watcherLevel: videoItem.watcherLevel,
-                  balanceHit: videoItem.balanceHit,
-                  duration: videoItem.duration,
-                  rewardPercentForViewer: 10,
-                  rewardPercentForSharing: 10,
-                  creator: {
-                    avatarUrl: videoItem.creator.avatarImgUrl,
-                    nickname: videoItem.creator.nickname,
-                    userId: videoItem.creator.userId,
-                  },
-                }}
+                videoInfo={videoItem}
                 opts={<VideoCardOptBtnsForOwnedIPNFT />}
               />
             )
           })}
         {videoListType === 'my post' &&
-          _.isEmpty(videoList?.items) === false &&
           videoList?.items.map((videoItem, i) => {
             return (
               <VideoCard
                 key={`my-post-${i}`}
                 showPlayTipMask
-                videoInfo={{
-                  id: videoItem.contentId,
-                  title: videoItem.title,
-                  description: videoItem.description,
-                  watcherLevel: videoItem.watcherLevel,
-                  balanceHit: videoItem.balanceHit,
-                  duration: videoItem.duration,
-                  rewardPercentForViewer: 10,
-                  rewardPercentForSharing: 10,
-                  creator: {
-                    avatarUrl: videoItem.creator.avatarImgUrl,
-                    nickname: videoItem.creator.nickname,
-                    userId: videoItem.creator.userId,
-                  },
-                }}
-                opts={
-                  <VideoCardOptBtnsForMyPost
-                    videoId={videoItem.contentId}
-                    videoTitle={videoItem.title}
-                    liked={videoItem.liked}
-                    favorited={videoItem.marked}
-                  />
-                }
+                videoInfo={videoItem}
+                opts={<VideoCardOptBtnsForMyPost videoInfo={videoItem} />}
+              />
+            )
+          })}
+        {videoListType === 'history' &&
+          videoList?.items.map((videoItem, i) => {
+            return (
+              <VideoCard
+                key={`my-post-${i}`}
+                showPlayTipMask
+                videoInfo={videoItem}
+                opts={<VideoCardOptBtnsForWatched videoInfo={videoItem} />}
               />
             )
           })}

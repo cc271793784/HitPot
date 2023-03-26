@@ -31,10 +31,11 @@ const UpgradeMemberCardLevelModal = (props: Props) => {
         userStore.updateUserInfo({
           level: userLevel,
         })
-        onClose()
       })
       .catch((e) => {
         message.error('upgrade member card failed')
+      })
+      .finally(() => {
         onClose()
       })
   }, [userLevel, onClose])

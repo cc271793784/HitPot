@@ -1,8 +1,13 @@
 import styles from './layout.module.css'
 
 import VideoCardOptBtns from '../VideoCardOptBtns'
+import { VideoDetailInfo } from 'web-api/video'
 
-const VideoCardOptBtnsForSubscription = (props: any) => {
+interface Props {
+  videoInfo: VideoDetailInfo
+}
+
+const VideoCardOptBtnsForSubscription = (props: Props) => {
   return <VideoCardOptBtns {...props} />
 }
 

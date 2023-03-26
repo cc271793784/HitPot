@@ -1,18 +1,22 @@
 import cx from 'classnames'
 import { ChangeEvent, useCallback, useState } from 'react'
 import { Button, Form, Modal } from 'react-bootstrap'
+import { message } from 'antd'
+import _ from 'lodash'
 
 import styles from './layout.module.css'
 
 import walletStore from 'stores/wallet'
+import * as walletApi from 'web-api/wallet'
+import { VideoDetailInfo } from 'web-api/video'
 
 interface Props {
   onClose: () => void
-  videoId: number
+  videoInfo: VideoDetailInfo
 }
 
 const AddHitToVideoModal = (props: Props) => {
-  const { videoId, onClose } = props
+  const { videoInfo, onClose } = props
 
   const [hitCount, setHitCount] = useState('')
   const [adLink, setAdLink] = useState('')
@@ -23,26 +27,39 @@ const AddHitToVideoModal = (props: Props) => {
   const [hasValidatedForm, setHasValidatedNFTCount] = useState(false)
 
   const handleInputHitCount = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const currentValue = e.currentTarget.value
+    const currentValue = _.trim(e.currentTarget.value)
     if (currentValue === '' || /^[1-9]\d*$/.test(currentValue) === true) {
       setHitCount(currentValue)
     }
   }, [])
 
   const handleInputAdLink = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const currentValue = e.currentTarget.value
+    const currentValue = _.trim(e.currentTarget.value)
     setAdLink(currentValue)
   }, [])
 
   const handleInputAdTitle = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const currentValue = e.currentTarget.value
+    const currentValue = _.trim(e.currentTarget.value)
     setAdTitle(currentValue)
   }, [])
 
   const handleClickConfirmPurchaseButton = useCallback(() => {
     setHasValidatedNFTCount(true)
-    setIsHitCountValid(false)
-  }, [])
+    setIsHitCountValid(true)
+    setIsAdLinkValid(true)
+    setIsAdTitleValid(true)
+
+    walletApi
+      .depositToContent(adLink, adTitle, parseInt(hitCount, 10), videoInfo.contentId)
+      .then(() => {
+        onClose()
+        message.success('Added')
+      })
+      .catch(() => {
+        message.error('Add failed')
+      })
+      .finally(() => {})
+  }, [adLink, adTitle, hitCount, onClose, videoInfo.contentId])
 
   return (
     <Modal

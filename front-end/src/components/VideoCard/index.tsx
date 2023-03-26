@@ -1,34 +1,20 @@
 import cx from 'classnames'
 import { useNavigate } from 'react-router-dom'
+import { useCallback } from 'react'
 
 import styles from './layout.module.css'
 
-import testVideoPoster from 'statics/images/test-video-poster.png'
 import defaultAvatar from 'statics/images/default-avatar.svg'
 
 import VideoPlayTipMask from '../VideoPlayTipMask'
-import { UserLevel } from 'typings/UserLevel'
-import { useCallback } from 'react'
+import { VideoDetailInfo } from 'web-api/video'
+import { formatDuration } from 'utils/formatDuration'
 
 interface Props {
   style?: React.CSSProperties
   showPlayTipMask: boolean
   opts: React.ReactElement
-  videoInfo: {
-    id: number
-    title: string
-    description: string
-    watcherLevel: UserLevel
-    balanceHit: number
-    duration: number
-    rewardPercentForViewer: number
-    rewardPercentForSharing: number
-    creator: {
-      avatarUrl: string
-      userId: string
-      nickname: string
-    }
-  }
+  videoInfo: VideoDetailInfo
 }
 
 const VideoCard = (props: Props) => {
@@ -37,8 +23,8 @@ const VideoCard = (props: Props) => {
   const navigate = useNavigate()
 
   const handleClickPlay = useCallback(() => {
-    navigate(`/video/${videoInfo.id}`)
-  }, [navigate, videoInfo.id])
+    navigate(`/video/${videoInfo.contentId}`)
+  }, [navigate, videoInfo.contentId])
 
   return (
     <div
@@ -48,36 +34,36 @@ const VideoCard = (props: Props) => {
       <div className={cx('position-relative')}>
         <img
           className={cx(styles.videoPoster)}
-          src={testVideoPoster}
+          src={videoInfo.coverImgUrl}
           width={682}
           height={384}
           alt=''
         />
-        <span className={cx(styles.videoDuration)}>{videoInfo.duration}</span>
+        <span className={cx(styles.videoDuration)}>{formatDuration(videoInfo.duration)}</span>
         {showPlayTipMask && (
           <VideoPlayTipMask
-            videoId={videoInfo?.id}
-            userLevel={videoInfo?.watcherLevel}
+            videoId={videoInfo.contentId}
+            userLevel={videoInfo.watcherLevel}
             hitCount={videoInfo.balanceHit}
-            rewardPercentForViewer={videoInfo.rewardPercentForViewer}
-            rewardPercentForSharing={videoInfo.rewardPercentForSharing}
+            rewardPercentForViewer={videoInfo.yieldRateOfViewer}
+            rewardPercentForSharing={videoInfo.yieldRateOfInfluencer}
             onClickPlay={handleClickPlay}
           />
         )}
       </div>
       <div className={cx(styles.videoInfoWrap)}>
-        <div className={cx(styles.videoTitle)}>{videoInfo?.title}</div>
+        <div className={cx(styles.videoTitle)}>{videoInfo.title}</div>
         <div className={cx('d-flex align-items-center gap-2 mt-2', styles.videoUploader)}>
           <img
             className={cx(styles.userAvatar)}
-            src={videoInfo.creator.avatarUrl || defaultAvatar}
+            src={videoInfo.creator.avatarImgUrl || defaultAvatar}
             width={24}
             height={24}
             alt=''
           />
           <span className={cx(styles.uploaderName)}>{videoInfo.creator.nickname}</span>
         </div>
-        <div className={cx(styles.videoIntro)}>{videoInfo?.description}</div>
+        <div className={cx(styles.videoIntro)}>{videoInfo.description}</div>
         <div className={cx(styles.operateButtons)}>{opts}</div>
       </div>
     </div>

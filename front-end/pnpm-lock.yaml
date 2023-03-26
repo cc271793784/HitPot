@@ -17,9 +17,12 @@ specifiers:
   bootstrap: ^5.2.3
   bootstrap-icons: ^1.10.3
   classnames: ^2.3.2
+  copy-text-to-clipboard: ^3.1.0
   cross-env: ^7.0.3
+  dayjs: ^1.11.7
   ethers: ^6.1.0
   events: ^3.3.0
+  format-duration: ^3.0.2
   js-cookie: ^3.0.1
   lodash: ^4.17.21
   mobx: ^6.8.0
@@ -48,8 +51,11 @@ dependencies:
   bootstrap: 5.2.3_@popperjs+core@2.11.6
   bootstrap-icons: 1.10.3
   classnames: 2.3.2
+  copy-text-to-clipboard: 3.1.0
+  dayjs: 1.11.7
   ethers: 6.1.0
   events: 3.3.0
+  format-duration: 3.0.2
   js-cookie: 3.0.1
   lodash: 4.17.21
   mobx: 6.8.0
@@ -4089,6 +4095,11 @@ packages:
     engines: {node: '>= 0.6'}
     dev: false
 
+  /copy-text-to-clipboard/3.1.0:
+    resolution: {integrity: sha512-PFM6BnjLnOON/lB3ta/Jg7Ywsv+l9kQGD4TWDCSlRBGmqnnTM5MrDkhAFgw+8HZt0wW6Q2BBE4cmy9sq+s9Qng==}
+    engines: {node: '>=12'}
+    dev: false
+
   /copy-to-clipboard/3.3.3:
     resolution: {integrity: sha512-2KV8NhB5JqC3ky0r9PMCAZKbUHSwtEo4CwCs0KXgruG43gX5PMqDEBbVU4OUzw2MuAWUfsuFmWvEKG5QRfSnJA==}
     dependencies:
@@ -5550,6 +5561,10 @@ packages:
       asynckit: 0.4.0
       combined-stream: 1.0.8
       mime-types: 2.1.35
+    dev: false
+
+  /format-duration/3.0.2:
+    resolution: {integrity: sha512-pKzJDSRgK2lqAiPW3uizDaIJaJnataZclsahz25UMwfdryBGDa+1HlbXGjzpMvX/2kMh4O0sNevFXKaEfCjHsA==}
     dev: false
 
   /forwarded/0.2.0:

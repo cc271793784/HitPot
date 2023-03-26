@@ -46,7 +46,7 @@ const VideoPlayTipMask = (props: Props) => {
         <VipBadge level={userLevel} />
       </div>
       <div className={cx('mt-1', styles.rewards)}>
-        Reward: {rewardPercentForViewer}% Viewer / {rewardPercentForSharing}% Influencer sharing
+        Reward: {rewardPercentForViewer * 100}% Viewer / {rewardPercentForSharing * 100}% Influencer sharing
       </div>
     </div>
   )

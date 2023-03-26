@@ -1,16 +1,22 @@
 import cx from 'classnames'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from 'react-bootstrap'
+import { LoadingOutlined } from '@ant-design/icons'
+import { Empty } from 'antd'
+import _ from 'lodash'
+import { flushSync } from 'react-dom'
 
 import styles from './layout.module.css'
+
+import defaultAvatar from 'statics/images/default-avatar.svg'
 
 import VideoCard from 'components/VideoCard'
 import VideoCardOptBtnsForRecommend from 'components/VideoCardOptBtnsForRecommend'
 import VideoCardOptBtnsForIPNFT from 'components/VideoCardOptBtnsForIPNFT'
 import FeedEventPostNewVideo from 'components/FeedEventPostNewVideo'
 
+import { VideoList, SubscriptionEventList } from 'web-api/video'
 import * as videoApi from 'web-api/video'
-import { VideoList } from 'web-api/video'
 import { VideoListPageSize } from '../../constants'
 
 type VideoListType = 'recommend' | 'subscription' | 'ipnft'
@@ -21,13 +27,24 @@ const OnymousLanding = () => {
   const lastVideoListTypeRef = useRef<VideoListType>('recommend')
   const [videoList, setVideoList] = useState<VideoList | null>(null)
   const videoListRef = useRef<VideoList | null>(null)
+  const [subscriptionEventList, setSubscriptionEventList] = useState<SubscriptionEventList | null>(null)
+  const subscriptionEventListRef = useRef<SubscriptionEventList | null>(null)
   const [pageNo, setPageNo] = useState(1)
+  const [isLoadingData, setIsLoadingData] = useState(false)
 
   const setVideoListTypeWrap = useCallback(
     (type: VideoListType) => {
-      setVideoListType(type)
-      videoListTypeRef.current = type
-      lastVideoListTypeRef.current = videoListType
+      flushSync(() => {
+        setVideoListType(type)
+        videoListTypeRef.current = type
+        lastVideoListTypeRef.current = videoListType
+        setVideoList(null)
+        videoListRef.current = null
+        setSubscriptionEventList(null)
+        subscriptionEventListRef.current = null
+        setPageNo(1)
+        setIsLoadingData(true)
+      })
     },
     [videoListType],
   )
@@ -51,6 +68,24 @@ const OnymousLanding = () => {
     lastVideoListTypeRef.current = videoListType
   }, [])
 
+  const updateSubscriptionEventList = useCallback(
+    (list: SubscriptionEventList) => {
+      if (subscriptionEventListRef.current === null) {
+        setSubscriptionEventList(list)
+        subscriptionEventListRef.current = list
+      } else {
+        const newList = {
+          ...list,
+          items: subscriptionEventListRef.current.items.concat(list.items),
+        }
+        setSubscriptionEventList(newList)
+        subscriptionEventListRef.current = newList
+      }
+      lastVideoListTypeRef.current = videoListType
+    },
+    [videoListType],
+  )
+
   useEffect(() => {
     if (videoListType === 'recommend') {
       videoApi
@@ -61,15 +96,21 @@ const OnymousLanding = () => {
           }
         })
         .catch(() => {})
+        .finally(() => {
+          setIsLoadingData(false)
+        })
     } else if (videoListType === 'subscription') {
       videoApi
         .pageContentBySubscribe(VideoListPageSize, pageNo)
         .then((result) => {
           if (videoListTypeRef.current === 'subscription') {
-            updateVideoList(result, 'subscription')
+            updateSubscriptionEventList(result)
           }
         })
         .catch(() => {})
+        .finally(() => {
+          setIsLoadingData(false)
+        })
     } else if (videoListType === 'ipnft') {
       videoApi
         .pageContentByStocking(VideoListPageSize, pageNo)
@@ -79,8 +120,11 @@ const OnymousLanding = () => {
           }
         })
         .catch(() => {})
+        .finally(() => {
+          setIsLoadingData(false)
+        })
     }
-  }, [pageNo, updateVideoList, videoListType])
+  }, [pageNo, updateSubscriptionEventList, updateVideoList, videoListType])
 
   return (
     <div className={cx(styles.wrap)}>
@@ -92,6 +136,7 @@ const OnymousLanding = () => {
             onClick={(e) => {
               e.preventDefault()
               setVideoListTypeWrap('recommend')
+              setPageNo(1)
             }}
           >
             Recommend
@@ -123,76 +168,51 @@ const OnymousLanding = () => {
         </li>
       </ul>
       <div className={cx('d-flex flex-column align-items-center', styles.videoList)}>
+        {isLoadingData && <LoadingOutlined style={{ fontSize: 48, marginTop: 30 }} />}
+        {isLoadingData === false &&
+          _.isEmpty(videoList?.items) === true &&
+          _.isEmpty(subscriptionEventList?.items) === true && (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={<span>No Data</span>}
+            ></Empty>
+          )}
         {videoListType === 'recommend' &&
-          videoList?.items.map(() => {
+          videoList?.items.map((item, i) => {
             return (
               <VideoCard
-                opts={<VideoCardOptBtnsForRecommend />}
+                key={`recommend-${i}`}
+                opts={<VideoCardOptBtnsForRecommend videoInfo={item} />}
                 showPlayTipMask
-                videoInfo={{
-                  id: 0,
-                  title: '',
-                  description: '',
-                  watcherLevel: 0,
-                  balanceHit: 0,
-                  duration: 0,
-                  rewardPercentForViewer: 0,
-                  rewardPercentForSharing: 0,
-                  creator: {
-                    avatarUrl: '',
-                    userId: '',
-                    nickname: '',
-                  },
-                }}
+                videoInfo={item}
               />
             )
           })}
         {videoListType === 'subscription' &&
-          videoList?.items.map((item, i) => {
+          subscriptionEventList?.items.map((item, i) => {
             return (
               <FeedEventPostNewVideo
+                key={`subscription-${i}`}
                 event={{
-                  content: 'Post new video',
-                  timestamp: Date.now(),
+                  comment: item.comment,
+                  timestamp: item.createTime,
                   trigger: {
-                    avatarUrl: '',
-                    nickname: '',
+                    avatarUrl: item.content.creator.avatarImgUrl || defaultAvatar,
+                    nickname: item.content.creator.nickname,
                   },
                 }}
-                videoInfo={{
-                  id: 0,
-                  title: '',
-                  thumbnail: '',
-                  description: '',
-                  duration: 0,
-                  creator: {
-                    nickname: '',
-                  },
-                }}
+                videoInfo={item.content}
               />
             )
           })}
         {videoListType === 'ipnft' &&
-          videoList?.items.map(() => {
+          videoList?.items.map((item, i) => {
             return (
               <VideoCard
-                opts={<VideoCardOptBtnsForIPNFT />}
+                key={`ipnft-${i}`}
+                opts={<VideoCardOptBtnsForIPNFT videoInfo={item} />}
                 showPlayTipMask={false}
-                videoInfo={{
-                  id: 0,
-                  title: '',
-                  description: '',
-                  watcherLevel: 0,
-                  balanceHit: 0,
-                  duration: 0,
-                  rewardPercentForViewer: 0,
-                  rewardPercentForSharing: 0,
-                  creator: {
-                    avatarUrl: '',
-                    userId: '',
-                    nickname: '',
-                  },
-                }}
+                videoInfo={item}
               />
             )
           })}
