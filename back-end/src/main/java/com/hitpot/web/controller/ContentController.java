@@ -121,7 +121,7 @@ public class ContentController {
     @ResponseBody
     @GetMapping("/page-content-by-subscribe")
     @ApiOperation("获取我订阅的视频列表")
-    public RestResult<PageChunk<ContentVO>> listContentBySubscribe(
+    public RestResult<PageChunk<TimelineVO>> listContentBySubscribe(
         @ApiParam("每页条目数") @RequestParam(defaultValue = "20", required = false) Integer pageSize,
         @ApiParam("页数") @RequestParam(defaultValue = "20", required = false) Integer pageNo
     ) {
@@ -216,7 +216,7 @@ public class ContentController {
 
     @ResponseBody
     @GetMapping("/list-most-popular-content")
-    @ApiOperation("获取我收藏的视频列表")
+    @ApiOperation("获取最流行的视频列表，返回3个")
     public RestResult<List<ContentVO>> listMostPopularContent() {
         return RestResult.success(contentService.listMostPopularContent());
     }

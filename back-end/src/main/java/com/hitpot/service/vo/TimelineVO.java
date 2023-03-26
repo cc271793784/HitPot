@@ -23,4 +23,6 @@ public class TimelineVO {
     private String comment;
     @ApiModelProperty("评论时间")
     private Date createTime;
+    @ApiModelProperty("分享类型")
+    private Integer shareType;
 }

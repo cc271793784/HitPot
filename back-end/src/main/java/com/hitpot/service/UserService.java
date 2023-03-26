@@ -3,6 +3,7 @@ package com.hitpot.service;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSON;
+import com.google.common.collect.Lists;
 import com.hitpot.common.DateUtils;
 import com.hitpot.common.SignatureUtils;
 import com.hitpot.common.exception.HitpotException;
@@ -17,8 +18,10 @@ import com.hitpot.repo.UserRepository;
 import com.hitpot.repo.WalletRepository;
 import com.hitpot.service.vo.LoginNonceVO;
 import com.hitpot.service.vo.LoginResultVO;
+import com.hitpot.service.vo.SubscribeVO;
 import com.hitpot.service.vo.UserVO;
 import com.hitpot.web.controller.req.LoginForm;
+import com.hitpot.web.controller.req.SubscribeCheckForm;
 import com.hitpot.web.controller.req.UserForm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +30,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -112,12 +118,12 @@ public class UserService {
         User user = userRepository.findFirstByUserId(userId);
         user.setLevel(level);
         userRepository.save(user);
-        return transToUserVO(user);
+        return transToUserVO(null, user);
     }
 
     public Boolean subscribeCreator(String userId, String creatorId) throws HitpotException {
         User creator = userRepository.findFirstByUserId(creatorId);
-        if (creator != null) {
+        if (creator == null) {
             // 如果创作者不存在抛出异常
             throw new HitpotException(HitpotExceptionEnum.PARAMETER_ERROR);
         }
@@ -137,7 +143,7 @@ public class UserService {
 
     public Boolean unSubscribeCreator(String userId, String creatorId) throws HitpotException {
         User creator = userRepository.findFirstByUserId(creatorId);
-        if (creator != null) {
+        if (creator == null) {
             // 如果创作者不存在抛出异常
             throw new HitpotException(HitpotExceptionEnum.PARAMETER_ERROR);
         }
@@ -153,9 +159,26 @@ public class UserService {
         return userRepository.findFirstByUserId(userId);
     }
 
-    public UserVO detailUser(String userId) {
-        User user = userRepository.findFirstByUserId(userId);
-        return transToUserVO(user);
+    public UserVO detailUser(String userId, String creatorId) {
+        User user = userRepository.findFirstByUserId(creatorId);
+        return transToUserVO(userId, user);
+    }
+
+    public List<SubscribeVO> subscribeCheck(String userId, SubscribeCheckForm subscribeCheckForm) {
+        List<SubscribeVO> subscribeVOList = new ArrayList<>();
+        if (subscribeCheckForm.getCreatorId().isEmpty()) {
+            return subscribeVOList;
+        }
+        List<SubscriptionCreator> subscriptionCreatorList = subscriptionCreatorRepository.findAllByUserIdAndCreatorIdIn(userId, subscribeCheckForm.getCreatorId());
+        for (SubscriptionCreator subscriptionCreator : subscriptionCreatorList) {
+            subscribeVOList.add(SubscribeVO.builder().creatorId(subscriptionCreator.getCreatorId()).subscribe(true).build());
+        }
+        List<String> tempCreatorIdList = Lists.newCopyOnWriteArrayList(subscribeCheckForm.getCreatorId());
+        tempCreatorIdList.removeAll(subscriptionCreatorList.stream().map(SubscriptionCreator::getCreatorId).collect(Collectors.toList()));
+        for (String creatorId : tempCreatorIdList) {
+            subscribeVOList.add(SubscribeVO.builder().creatorId(creatorId).subscribe(false).build());
+        }
+        return subscribeVOList;
     }
 
     public UserVO updateProfile(String userId, UserForm userForm) {
@@ -174,10 +197,10 @@ public class UserService {
             user.setFeedSettingType(feedSettingType);
         }
         userRepository.save(user);
-        return transToUserVO(user);
+        return transToUserVO(null, user);
     }
 
-    private UserVO transToUserVO(User user) {
+    private UserVO transToUserVO(String userId, User user) {
         UserVO userVO = UserVO.builder()
             .nickname(user.getNickname())
             .userId(user.getUserId())
@@ -187,6 +210,13 @@ public class UserService {
 
         if (StrUtil.isNotBlank(user.getAvatarImg())) {
             userVO.setAvatarImgUrl(materialService.getMaterialUrl(user.getAvatarImg()));
+        }
+
+        if (userId != null) {
+            SubscriptionCreator subscriptionCreator = subscriptionCreatorRepository.findFirstByUserIdAndCreatorId(userId, user.getUserId());
+            userVO.setSubscribe(subscriptionCreator != null);
+        } else {
+            userVO.setSubscribe(false);
         }
 
         return userVO;

@@ -4,16 +4,20 @@ import com.hitpot.contract.HitpotBridge;
 import com.hitpot.contract.PotToken;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.utils.Convert;
 
 import javax.annotation.PostConstruct;
+import java.math.BigInteger;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
-@Order()
+@Lazy
 public class BlockchainService {
     @Autowired
     private HitpotBridge hitpotBridge;
@@ -21,13 +25,15 @@ public class BlockchainService {
     private PotToken potToken;
     @Autowired
     private WalletService walletService;
+    // 余额不足时，最小的挖矿金额
+    private BigInteger minMintAmount = Convert.toWei("500000", Convert.Unit.ETHER).toBigInteger();
 
     @PostConstruct
     public void init() {
         hitpotBridge.depositEventEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST)
             .subscribe(result -> {
                 String address = result.account;
-                Long amountPot = result.amount.longValue();
+                BigInteger amountPot = result.amount;
                 String transactionId = result.log.getTransactionHash();
                 log.info("deposit pot, account:{}, amount:{}, transactionId:{}", address, amountPot, transactionId);
                 walletService.depositPot(address, walletService.convertToSzaboFromWei(amountPot), transactionId);
@@ -37,8 +43,8 @@ public class BlockchainService {
         hitpotBridge.withdrawEventEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST)
             .subscribe(result -> {
                 String address = result.account;
-                Long amountPot = result.amount.longValue();
-                Long userTransactionId = result.userTransactionId.longValue();
+                BigInteger amountPot = result.amount;
+                long userTransactionId = result.userTransactionId.longValue();
                 log.info("withdraw pot, account:{}, amount:{}, userTransaction:{}", address, amountPot, userTransactionId);
                 walletService.updateWithdrawPotStatus(address, walletService.convertToSzaboFromWei(amountPot), userTransactionId);
             }, error -> {
@@ -47,7 +53,36 @@ public class BlockchainService {
     }
 
     @Async
-    public void withdraw(String address, long amountPot) {
-
+    public void withdraw(String address, long amountPot, long userTransactionId) {
+        log.info("withdraw start, address:{}, amountPot:{}, userTransactionId:{}", address, amountPot, userTransactionId);
+        BigInteger withdrawAmount = walletService.convertToWeiFromSzabo(amountPot);
+        potToken.balanceOf(hitpotBridge.getContractAddress()).sendAsync()
+            .thenCompose(balance -> {
+                log.info("hitpot bridge balance: {}", balance);
+                if (balance.compareTo(withdrawAmount) <= 0) {
+                    BigInteger mintAmount = minMintAmount;
+                    if (withdrawAmount.compareTo(minMintAmount) > 0) {
+                        mintAmount = withdrawAmount;
+                    }
+                    return potToken.mint(hitpotBridge.getContractAddress(), mintAmount).sendAsync();
+                } else {
+                    return CompletableFuture.completedFuture(new TransactionReceipt());
+                }
+            })
+            .thenCompose(transactionReceipt -> {
+                log.info("pot token mint, account:{}, amount:{}, status:{}", hitpotBridge.getContractAddress(), amountPot, transactionReceipt.isStatusOK());
+                return hitpotBridge.withdraw(address, withdrawAmount, BigInteger.valueOf(userTransactionId)).sendAsync();
+            })
+            .whenCompleteAsync((transactionReceipt, error) -> {
+                if (error != null) {
+                    log.error(error.getMessage(), error);
+                } else {
+                    log.info(
+                        "withdraw, address:{}, amountPot:{}, userTransactionId:{}, transactionHash:{}, statusOk:{}",
+                        address, amountPot, userTransactionId, transactionReceipt.getTransactionHash(),
+                        transactionReceipt.isStatusOK()
+                    );
+                }
+            });
     }
 }

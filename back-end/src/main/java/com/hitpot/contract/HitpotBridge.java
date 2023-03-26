@@ -46,16 +46,16 @@ public class HitpotBridge extends Contract {
 
     public static final String FUNC_OWNER = "owner";
 
-    public static final String FUNC_PROVEBLOCKS = "proveBlocks";
-
     public static final String FUNC_RENOUNCEOWNERSHIP = "renounceOwnership";
+
+    public static final String FUNC_SUBMITBATCH = "submitBatch";
 
     public static final String FUNC_TRANSFEROWNERSHIP = "transferOwnership";
 
     public static final String FUNC_WITHDRAW = "withdraw";
 
     public static final Event DEPOSITEVENT_EVENT = new Event("DepositEvent",
-        Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}, new TypeReference<Uint256>() {}));
+        Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) {}, new TypeReference<Uint256>() {}));
     ;
 
     public static final Event OWNERSHIPTRANSFERRED_EVENT = new Event("OwnershipTransferred",
@@ -63,7 +63,7 @@ public class HitpotBridge extends Contract {
     ;
 
     public static final Event WITHDRAWEVENT_EVENT = new Event("WithdrawEvent",
-        Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}, new TypeReference<Uint256>() {}, new TypeReference<Uint64>() {}));
+        Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) {}, new TypeReference<Uint256>() {}, new TypeReference<Uint64>() {}));
     ;
 
     @Deprecated
@@ -90,8 +90,8 @@ public class HitpotBridge extends Contract {
         for (Contract.EventValuesWithLog eventValues : valueList) {
             DepositEventEventResponse typedResponse = new DepositEventEventResponse();
             typedResponse.log = eventValues.getLog();
-            typedResponse.account = (String) eventValues.getNonIndexedValues().get(0).getValue();
-            typedResponse.amount = (BigInteger) eventValues.getNonIndexedValues().get(1).getValue();
+            typedResponse.account = (String) eventValues.getIndexedValues().get(0).getValue();
+            typedResponse.amount = (BigInteger) eventValues.getNonIndexedValues().get(0).getValue();
             responses.add(typedResponse);
         }
         return responses;
@@ -104,8 +104,8 @@ public class HitpotBridge extends Contract {
                 Contract.EventValuesWithLog eventValues = extractEventParametersWithLog(DEPOSITEVENT_EVENT, log);
                 DepositEventEventResponse typedResponse = new DepositEventEventResponse();
                 typedResponse.log = log;
-                typedResponse.account = (String) eventValues.getNonIndexedValues().get(0).getValue();
-                typedResponse.amount = (BigInteger) eventValues.getNonIndexedValues().get(1).getValue();
+                typedResponse.account = (String) eventValues.getIndexedValues().get(0).getValue();
+                typedResponse.amount = (BigInteger) eventValues.getNonIndexedValues().get(0).getValue();
                 return typedResponse;
             }
         });
@@ -156,9 +156,9 @@ public class HitpotBridge extends Contract {
         for (Contract.EventValuesWithLog eventValues : valueList) {
             WithdrawEventEventResponse typedResponse = new WithdrawEventEventResponse();
             typedResponse.log = eventValues.getLog();
-            typedResponse.account = (String) eventValues.getNonIndexedValues().get(0).getValue();
-            typedResponse.amount = (BigInteger) eventValues.getNonIndexedValues().get(1).getValue();
-            typedResponse.userTransactionId = (BigInteger) eventValues.getNonIndexedValues().get(2).getValue();
+            typedResponse.account = (String) eventValues.getIndexedValues().get(0).getValue();
+            typedResponse.amount = (BigInteger) eventValues.getNonIndexedValues().get(0).getValue();
+            typedResponse.userTransactionId = (BigInteger) eventValues.getNonIndexedValues().get(1).getValue();
             responses.add(typedResponse);
         }
         return responses;
@@ -171,9 +171,9 @@ public class HitpotBridge extends Contract {
                 Contract.EventValuesWithLog eventValues = extractEventParametersWithLog(WITHDRAWEVENT_EVENT, log);
                 WithdrawEventEventResponse typedResponse = new WithdrawEventEventResponse();
                 typedResponse.log = log;
-                typedResponse.account = (String) eventValues.getNonIndexedValues().get(0).getValue();
-                typedResponse.amount = (BigInteger) eventValues.getNonIndexedValues().get(1).getValue();
-                typedResponse.userTransactionId = (BigInteger) eventValues.getNonIndexedValues().get(2).getValue();
+                typedResponse.account = (String) eventValues.getIndexedValues().get(0).getValue();
+                typedResponse.amount = (BigInteger) eventValues.getNonIndexedValues().get(0).getValue();
+                typedResponse.userTransactionId = (BigInteger) eventValues.getNonIndexedValues().get(1).getValue();
                 return typedResponse;
             }
         });
@@ -208,18 +208,18 @@ public class HitpotBridge extends Contract {
         return executeRemoteCallSingleValueReturn(function, String.class);
     }
 
-    public RemoteFunctionCall<TransactionReceipt> proveBlocks() {
+    public RemoteFunctionCall<TransactionReceipt> renounceOwnership() {
         final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(
-            FUNC_PROVEBLOCKS,
+            FUNC_RENOUNCEOWNERSHIP,
             Arrays.<Type>asList(),
             Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
 
-    public RemoteFunctionCall<TransactionReceipt> renounceOwnership() {
+    public RemoteFunctionCall<TransactionReceipt> submitBatch(byte[] transactions) {
         final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(
-            FUNC_RENOUNCEOWNERSHIP,
-            Arrays.<Type>asList(),
+            FUNC_SUBMITBATCH,
+            Arrays.<Type>asList(new org.web3j.abi.datatypes.DynamicBytes(transactions)),
             Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }

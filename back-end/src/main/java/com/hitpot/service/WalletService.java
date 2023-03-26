@@ -1,5 +1,7 @@
 package com.hitpot.service;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
 import com.hitpot.common.DateUtils;
 import com.hitpot.common.exception.HitpotException;
@@ -9,12 +11,12 @@ import com.hitpot.enums.*;
 import com.hitpot.repo.*;
 import com.hitpot.service.vo.*;
 import com.hitpot.domain.*;
+import com.hitpot.enums.*;
+import com.hitpot.repo.*;
 import com.hitpot.web.controller.req.ContentCollectForm;
 import com.hitpot.web.controller.req.ContentPurchaseNftForm;
 import com.hitpot.web.controller.req.ExchangeHitForm;
 import com.hitpot.web.controller.req.WatchForm;
-import com.hitpot.enums.*;
-import com.hitpot.repo.*;
 import com.hitpot.service.vo.*;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -26,6 +28,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -88,7 +92,7 @@ public class WalletService {
         return WalletVO.builder()
             .userId(userId)
             .balancePot(convertToEtherFromSzabo(wallet.getBalancePot()))
-            .balanceHit(wallet.getBalanceHit())
+            .balanceHit(convertToEtherFromSzabo(wallet.getBalanceHit()))
             .nfts(resultList.stream()
                 .map(tuple -> {
                     Long contentId = tuple.get(0, Long.class);
@@ -159,7 +163,7 @@ public class WalletService {
             userTransactionRepository.save(userTransaction);
 
             // 调用合约
-            blockchainService.withdraw(userId, convertToWeiFromSzabo(userTransaction.getAmountPot()));
+            blockchainService.withdraw(userId, userTransaction.getAmountPot(), userTransaction.getId());
         }
     }
 
@@ -185,7 +189,7 @@ public class WalletService {
             }
 
             long amountHit = convertToSzaboFromEther(contentCollectForm.getAmountHit());
-            if (wallet.getBalanceHit() > 0 && wallet.getBalanceHit() > contentCollectForm.getAmountHit()) {
+            if (wallet.getBalanceHit() > 0 && wallet.getBalanceHit() > amountHit) {
                 wallet.setBalanceHit(wallet.getBalanceHit() - amountHit);
                 walletRepository.save(wallet);
 
@@ -220,6 +224,10 @@ public class WalletService {
                 throw new HitpotException(HitpotExceptionEnum.BALANCE_NFT_NO_SUFFICIENT);
             }
 
+            if (content.getUserId().equals(userId)) {
+                throw new HitpotException(HitpotExceptionEnum.CANNOT_SELL_TO_SELF);
+            }
+
             // TODO 判断单投资者购买NFT的数量是否超过限制
             QContentStock qContentStock = QContentStock.contentStock;
             List<ContentStock> contentStockList = jpaQueryFactory.selectFrom(qContentStock)
@@ -228,7 +236,7 @@ public class WalletService {
                 .fetchAll()
                 .fetch();
             long totalCount = contentStockList.stream().mapToLong(ContentStock::getCountIpNft).sum();
-            if (content.getCountIpNftForInvestor() > (totalCount + contentPurchaseNftForm.getCount())) {
+            if (content.getCountMaxLimitPerInvestor() < (totalCount + contentPurchaseNftForm.getCount())) {
                 throw new HitpotException(HitpotExceptionEnum.NFT_EXCEED_LIMIT_PER_INVESTOR);
             }
 
@@ -242,7 +250,7 @@ public class WalletService {
             // 判断使用的amount是否符合限制
             long minimumAmount = content.getPriceIpNft() * contentPurchaseNftForm.getCount();
             if (amountPot < minimumAmount) {
-                throw new HitpotException(HitpotExceptionEnum.BALANCE_POT_NO_SUFFICIENT);
+                throw new HitpotException(HitpotExceptionEnum.PAYMENT_POT_NO_SUFFICIENT);
             }
 
             // 添加NFT购买记录
@@ -259,10 +267,14 @@ public class WalletService {
             // 扣除余额
             wallet.setBalancePot(wallet.getBalancePot() - amountPot);
             walletRepository.save(wallet);
+
             // 更新创作者的余额
+            Wallet creatorWallet = walletRepository.findFirstByUserId(content.getUserId());
+            creatorWallet.setBalancePot(creatorWallet.getBalancePot() + amountPot);
+            walletRepository.save(creatorWallet);
 
             // 更新创作者的NFT
-            ContentStock creatorContentStock = contentStockRepository.findFirstByUserIdAndContentId(userId, content.getId());
+            ContentStock creatorContentStock = contentStockRepository.findFirstByUserIdAndContentId(content.getUserId(), content.getId());
             creatorContentStock.setCountIpNft(creatorContentStock.getCountIpNft() - contentStock.getCountIpNft());
             contentStockRepository.save(creatorContentStock);
 
@@ -289,9 +301,10 @@ public class WalletService {
 
     public void exchangeHit(String userId, ExchangeHitForm exchangeHitForm) {
         synchronized (this) {
+            LocalDateTime startTimeOfPrice = getStartTimeOfPrice();
             double amountHit = exchangeHitForm.getAmountHit();
             double priceOfHit = exchangeHitForm.getPriceHit();
-            double amountPot = priceOfHit * amountHit;
+            double amountPot = NumberUtil.mul(priceOfHit, amountHit);
 
             long amountHitOfMwei = convertToSzaboFromEther(amountHit);
             long amountPotOfMwei = convertToSzaboFromEther(amountPot);
@@ -305,7 +318,7 @@ public class WalletService {
 
             // 扣除POT，添加HIT
             wallet.setBalancePot(wallet.getBalancePot() - amountPotOfMwei);
-            wallet.setBalanceHit(wallet.getBalanceHit() + amountHitOfMwei);
+            // wallet.setBalanceHit(wallet.getBalanceHit() + amountHitOfMwei);
             walletRepository.save(wallet);
 
 
@@ -316,7 +329,7 @@ public class WalletService {
                 .status(TransactionStatus.PROCESSING.getId())
                 .amountPot(amountPotOfMwei)
                 .amountHit(amountHitOfMwei)
-                .paidTime(Date.from(getStartTimeOfPrice().atZone(ZoneId.systemDefault()).toInstant()))
+                .paidTime(Date.from(startTimeOfPrice.atZone(ZoneId.systemDefault()).toInstant()))
                 .build();
             userTransactionRepository.save(userTransaction);
         }
@@ -331,12 +344,11 @@ public class WalletService {
             List<ContentHitBalance> contentHitBalanceList = jpaQueryFactory.selectFrom(qContentHitBalance)
                 .from(qContentHitBalance)
                 .where(qContentHitBalance.contentId.eq(watchForm.getContentId()).and(qContentHitBalance.balanceHit.gt(0)))
-                .orderBy(qContentHitBalance.id.asc())
+                .orderBy(qContentHitBalance.balanceType.asc(), qContentHitBalance.id.asc())
                 .fetchAll()
                 .fetch();
             long amountHitLeft = contentHitBalanceList.stream().mapToLong(ContentHitBalance::getBalanceHit).sum();
             Wallet wallet = walletRepository.findFirstByUserId(user.getUserId());
-
 
             UserLevelPermission userLevelPermission = ContentService.LEVEL_TYPE_USER_LEVEL_PERMISSION_MAP.get(LevelType.getById(user.getLevel()));
             long consumeHit = convertToSzaboFromEther(userLevelPermission.getAmountHitPerSecond() * watchForm.getDuration());
@@ -356,8 +368,8 @@ public class WalletService {
                     // 消费金额
                     long tempHit;
                     if (hitBalance.getBalanceHit() >= consumeHit) {
-                        consumeHit = 0L;
                         tempHit = consumeHit;
+                        consumeHit = 0L;
                     } else {
                         consumeHit = consumeHit - hitBalance.getBalanceHit();
                         tempHit = hitBalance.getBalanceHit();
@@ -375,9 +387,6 @@ public class WalletService {
                         .consumeType(ConsumeType.CONSUME_FROM_CONTENT.getId())
                         .build();
                     updateContentHitConsumeList.add(contentHitConsume);
-                }
-                if (!updateContentHitBalanceList.isEmpty()) {
-                    contentHitBalanceRepository.saveAll(updateContentHitBalanceList);
                 }
             }
 
@@ -439,7 +448,7 @@ public class WalletService {
             .mapToLong(ContentStock::getCountIpNft).sum();
         return ContentNftDetailVO.builder()
             .contentId(content.getId())
-            .countIpNftLeft(content.getCountIpNft())
+            .countIpNft(content.getCountIpNft())
             .countIpNftLeft(content.getCountIpNftForInvestor() - soldCount)
             .build();
     }
@@ -461,13 +470,13 @@ public class WalletService {
             .stream().filter(contentHitBalance -> contentHitBalance.getBalanceType() == BalanceType.FUND_FOR_AD.getId())
             .map(contentHitBalance ->
                 AdVO.builder()
-                    .balanceHit(contentHitBalance.getBalanceHit())
+                    .balanceHit(convertToEtherFromSzabo(contentHitBalance.getBalanceHit()))
                     .adLink(contentHitBalance.getAdLink())
                     .adTitle(contentHitBalance.getAdTitle())
                     .build())
             .collect(Collectors.toList());
 
-        return ContentHitLeftVO.builder().amountHit(amountHitLeft).contentId(contentId).ads(ads).build();
+        return ContentHitLeftVO.builder().amountHit(convertToEtherFromSzabo(amountHitLeft)).contentId(contentId).ads(ads).build();
     }
 
     /**
@@ -484,12 +493,12 @@ public class WalletService {
         return Long.valueOf(amount).doubleValue() / 1_000_000;
     }
 
-    public long convertToSzaboFromWei(long amount) {
-        return amount / 1_000_000_000_000L;
+    public long convertToSzaboFromWei(BigInteger amount) {
+        return amount.divide(new BigInteger(Long.toString(1_000_000_000_000L))).longValue();
     }
 
-    public long convertToWeiFromSzabo(long amount) {
-        return amount * 1_000_000_000_000L;
+    public BigInteger convertToWeiFromSzabo(long amount) {
+        return new BigInteger(Long.toString(amount)).multiply(new BigInteger(Long.toString(1_000_000_000_000L)));
     }
 
     private LocalDateTime getStartTimeOfPrice() {
@@ -519,13 +528,17 @@ public class WalletService {
                 .fetchAll()
                 .fetch();
 
+            if (userTransactionList.isEmpty()) {
+                return;
+            }
+
             // 将不再当前周期内的交易设置为交易失败
-            List<UserTransaction> failureTransactionList = userTransactionList.stream()
-                .filter(userTransaction -> !userTransaction.getPaidTime().equals(start))
+            List<UserTransaction> finalUserTransactionList = userTransactionList.stream()
+                .filter(userTransaction -> !DateUtil.isSameTime(userTransaction.getPaidTime(), start))
                 .collect(Collectors.toList());
             Map<String, Long> userHitDiff = new HashMap<>();
             Map<String, Long> userPotDiff = new HashMap<>();
-            for (UserTransaction failureUserTransaction: failureTransactionList) {
+            for (UserTransaction failureUserTransaction: finalUserTransactionList) {
                 failureUserTransaction.setStatus(TransactionStatus.FAILURE.getId());
 
                 // 退费
@@ -535,7 +548,7 @@ public class WalletService {
 
             // 当前计费周期内的交易
             List<UserTransactionWrap> currentTransactionWrapList = userTransactionList.stream()
-                .filter(userTransaction -> userTransaction.getPaidTime().equals(start))
+                .filter(userTransaction -> DateUtil.isSameTime(userTransaction.getPaidTime(), start))
                 .map(userTransaction ->
                     UserTransactionWrap.builder()
                         .userTransaction(userTransaction)
@@ -578,7 +591,7 @@ public class WalletService {
                     long amountPot = userPotDiff.computeIfAbsent(userTransaction.getUserId(), key -> 0L);
                     userPotDiff.put(userTransaction.getUserId(), amountPot + userTransaction.getAmountPot());
                 }
-                failureTransactionList.add(userTransaction);
+                finalUserTransactionList.add(userTransaction);
             }
 
             Map<String, Wallet> walletMap = new HashMap<>();
@@ -594,8 +607,8 @@ public class WalletService {
             }
 
             // 更新用户交易状态
-            if (!failureTransactionList.isEmpty()) {
-                userTransactionRepository.saveAll(failureTransactionList);
+            if (!finalUserTransactionList.isEmpty()) {
+                userTransactionRepository.saveAll(finalUserTransactionList);
             }
             // 更新用户钱包余额
             if (!walletMap.isEmpty()) {
@@ -604,6 +617,7 @@ public class WalletService {
 
             // 更新当前小时的hit数量
             stringRedisTemplate.opsForValue().set(hitLeftAmountRedisKey, Long.toString(hitLeft));
+            stringRedisTemplate.expire(hitLeftAmountRedisKey, Duration.ofMinutes(80));
 
             // 更新下个周期的单价
             if (successAmountHit != 0 && successAmountPot != 0) {

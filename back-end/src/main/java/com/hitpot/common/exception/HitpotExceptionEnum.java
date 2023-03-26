@@ -13,11 +13,15 @@ public enum HitpotExceptionEnum {
     CONTENT_NOT_EXIST(20002, "视频不存在"),
     USER_NOT_EXIST(20003, "用户不存在"),
     MATERIAL_NOT_EXIST(20004, "资源不存在"),
+    CONTENT_WATCH_DURATION_INVALID(20005, "资源不存在"),
+    CANNOT_SELL_TO_SELF(20006, "NFT不能卖给自己"),
     BALANCE_POT_NO_SUFFICIENT(20100, "POT余额不足"),
     BALANCE_HIT_NO_SUFFICIENT(20101, "HIT余额不足"),
     BALANCE_NFT_NO_SUFFICIENT(20102, "NFT余额不足"),
     NFT_EXCEED_LIMIT_PER_INVESTOR(20103, "原始股东持有的NFT数量超过限制"),
     WATCH_TIME_SUFFICIENT(20104, "观看时长不足"),
+    WATCH_LEVEL_NOT_MEET(20105, "不满足观看等级"),
+    PAYMENT_POT_NO_SUFFICIENT(20106, "用于支付POT不足"),
     ;
     private Integer id;
     private String msg;

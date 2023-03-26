@@ -12,4 +12,6 @@ public interface SubscriptionCreatorRepository extends JpaRepository<Subscriptio
     SubscriptionCreator findFirstByUserIdAndCreatorId(String userId, String creatorId);
 
     List<SubscriptionCreator> findAllByUserId(String userId);
+
+    List<SubscriptionCreator> findAllByUserIdAndCreatorIdIn(String userId, List<String> creatorId);
 }

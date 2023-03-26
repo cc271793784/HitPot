@@ -43,7 +43,7 @@ create table content (
   count_ip_nft_for_investor bigint(20) default 0 comment "给股东的视频的NFT的最大数量",
   count_max_limit_per_investor bigint(20) default 0 comment "每个原始股东持有的IP NFT的最大数量",
   price_ip_nft bigint(20) default 0 comment "NFT的单价",
-  count_ip_nft_left bigint(20) default 0 comment "NFT的单价",
+  count_ip_nft_left bigint(20) default 0 comment "NFT剩余",
   yield_rate_influencer double default 0 comment "大V分享收益占比",
   yield_rate_viewer double default 0 comment "观看者收益占比",
   disabled tinyint(4) default 0,

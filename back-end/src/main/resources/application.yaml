@@ -42,7 +42,7 @@ spring:
     port: 6379
     client-type: jedis
   jpa:
-    show-sql: false
+    show-sql: true
     generate-ddl: false
     hibernate:
       ddl-auto: none
@@ -76,9 +76,8 @@ material:
 blockchain:
   server: http://poa-rpc.bestchain.fun:8545
   chain_id: 20230131
-  private_key: fecd8a9c9eb1a4c5b51df0c4ed1b2325358797168c5cfcbe46d97237c1247706
-  total_hit_for_per_hour: 1000000000
+  total_hit_for_per_hour: 1000000000000
   price_of_hit: 20000
   contract:
-    hitpot_bridage_address: "0x476f1dd0f60733Ee51c6704d0691E8F732D96102"
-    pot_token_address: "0x9EB183F819a407bB70810035807590DBaa8ae9Be"
+    hitpot_bridage_address: "0x84876A9221802a52aaE1534d087EdC5d486dCB92"
+    pot_token_address: "0xDF08ccb1109fDEE727E2B847ae64021D1d5639A2"

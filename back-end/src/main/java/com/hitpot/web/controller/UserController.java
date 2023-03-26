@@ -4,17 +4,18 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.hitpot.service.UserService;
 import com.hitpot.service.vo.LoginResultVO;
 import com.hitpot.service.vo.ReturnBooleanVO;
+import com.hitpot.service.vo.SubscribeVO;
 import com.hitpot.service.vo.UserVO;
-import com.hitpot.web.controller.req.LevelForm;
-import com.hitpot.web.controller.req.LoginForm;
-import com.hitpot.web.controller.req.SubscribeForm;
-import com.hitpot.web.controller.req.UserForm;
+import com.hitpot.web.controller.req.*;
 import com.hitpot.web.result.RestResult;
+import com.hitpot.web.controller.req.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -44,7 +45,7 @@ public class UserController {
     @ApiOperation("获取用户详细信息")
     public RestResult<UserVO> detail() throws Exception {
         String userId = StpUtil.getLoginIdAsString();
-        return RestResult.success(userService.detailUser(userId));
+        return RestResult.success(userService.detailUser(userId, userId));
     }
 
     @ResponseBody
@@ -77,5 +78,13 @@ public class UserController {
     public RestResult<UserVO> updateProfile(@RequestBody UserForm userForm) {
         String userId = StpUtil.getLoginIdAsString();
         return RestResult.success((userService.updateProfile(userId, userForm)));
+    }
+
+    @ResponseBody
+    @PostMapping("/user/subscribe/check")
+    @ApiOperation("检查是否订阅了作者")
+    public RestResult<List<SubscribeVO>> getSubscribeInfo(@RequestBody SubscribeCheckForm subscribeCheckForm) {
+        String userId = StpUtil.getLoginIdAsString();
+        return RestResult.success((userService.subscribeCheck(userId, subscribeCheckForm)));
     }
 }

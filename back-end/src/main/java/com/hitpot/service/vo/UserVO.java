@@ -23,4 +23,6 @@ public class UserVO {
     private String avatarImgUrl;
     @ApiModelProperty(value = "信息流设置: 0 Latest, 1 LocationBase, 2 SocialLinkage")
     private Integer feedSettingType;
+    @ApiModelProperty("是否订阅了作者")
+    private Boolean subscribe;
 }

@@ -7,16 +7,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@ApiModel("广告")
 @Data
+@ApiModel("是否订阅信息")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdVO {
-    @ApiModelProperty("此广告剩余hit数量")
-    private double balanceHit;
-    @ApiModelProperty("广告链接")
-    private String adLink;
-    @ApiModelProperty("广告标题")
-    private String adTitle;
+public class SubscribeVO {
+    @ApiModelProperty("创作者id")
+    private String creatorId;
+    @ApiModelProperty("是否订阅")
+    private boolean subscribe;
 }

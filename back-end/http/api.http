@@ -49,7 +49,7 @@ Content-Disposition: form-data; name="file"; filename="飞书20221102-163411.mp4
 < /Users/wangjunpeng/Downloads/飞书20221102-163411.mp4
 --WebAppBoundary--
 
-### 上传视频文件
+### 上传文件图片
 POST {{host}}/api/material/upload?materialType=0
 Authorization: {{accessToken}}
 Cache-Control: no-cache
@@ -77,20 +77,26 @@ Content-Type: application/json
 Authorization: {{accessToken}}
 
 {
-  "coverImg": "image/2d77c655609e4add80b65ab9194dea26.jpg",
-  "videoFilename": "video/212ebcdc2a744afc93ff943de7a9a5be.mp4",
-  "title": "titl",
+  "coverImg": "image/1c80e16dbc2d483a8a48edbceafc93a4.jpg",
+  "videoFilename": "video/88680d29e6a04c8f937546e8b2e90c63.mp4",
+  "title": "title",
   "description": "descri",
-  "watchLevel": 1,
+  "watchLevel": 0,
+  "enabledIpNft": true,
   "countIpNft": 100,
   "priceIpNft": 20,
-  "enabledIpNft": true,
   "ipNftRatioForInvestor": 0.8,
   "maxCountIpNftForPerInvestor": 10,
   "yieldRateOfInfluencer": 0.3,
   "yieldRateOfViewer": 0.3,
   "amountHit": 0
 }
+
+### 视频详情
+GET {{host}}/api/content/detail?contentId=5
+Content-Type: application/json
+Authorization: {{accessToken}}
+
 
 ### 我赞过的视频
 GET {{host}}/api/content/page-content-by-liked?pageSize=20&pageNo=1
@@ -122,7 +128,103 @@ Content-Type: application/json
   "signature": "0x11cb9771c5146b9bfe92eba1d9dfdb087cfe1828ed78fd123313c390663b09da49624b93446ffe31e5d97686343869170ddbf561304cc32c148787ebc1b78ab21c"
 }
 
+### 使用签名进行登录2
+POST {{host}}/api/user/login
+Content-Type: application/json
+
+{
+  "walletAddress": "0x3aF605Ec533EF13Cff525C92cCaD8608C58ad42E",
+  "message": "Example `personal_sign` message",
+  "signature": "0x13db60762754c6b26f49b8a58f032aeb83e5aea5bba72b2175fdf7ea67ab7cad2a8b4ac48e33c2b29e7527684a27a5e6ba6c46f565ef24f2dd0dbfe982acdb691b"
+}
+
 ### 获取用户详情
 GET {{host}}/api/user/detail
 Content-Type: application/json
 Authorization: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJsb2dpblR5cGUiOiJsb2dpbiIsImxvZ2luSWQiOiIweGJlMmYxN2FlMGY1MGJkZWQzNGU5NTIyMjZjOGFmY2VhZjliNzE4YTIiLCJkZXZpY2UiOiJkZWZhdWx0LWRldmljZSIsImVmZiI6MTY4MDQyNjI2MTUxOSwicm5TdHIiOiJMSmhRaDY0T1g5RUtta014RUdPNG9uQlFOT2xBWkI2MCJ9.COAtXkGDejQRgsFD-vXVXhQLEvVCl8a0YhTqjYIcIYk
+
+
+### 获取hit单价
+GET {{host}}/api/wallet/price-of-hit
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+
+### 兑换hit
+POST {{host}}/api/wallet/exchange-hit
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "amountHit": 50,
+  "priceHit": 0.02
+}
+
+
+### 提现
+POST {{host}}/api/wallet/withdraw
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "amountPot": 10
+}
+
+
+### 首页推荐
+GET {{host}}/api/content/list-most-popular-content
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+
+### 观看视频
+POST {{host}}/api/content/watch
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "contentId": 5,
+  "duration": 60
+}
+
+### 向视频中充值hit
+POST {{host}}/api/wallet/deposit-to-content
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "adLink": "https://www.baidu.com",
+  "adTitle": "百度",
+  "amountHit": 100,
+  "contentId": 5
+}
+
+### 购买NFT
+POST {{host}}/api/wallet/purchase-content-nft
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "amountPot": 141,
+  "contentId": 9,
+  "count": 7
+}
+
+### 订阅创作者
+POST {{host}}/api/user/subscribe
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "creatorId": "0x3af605ec533ef13cff525c92ccad8608c58ad42e"
+}
+
+### 检查我是否订阅过该作者
+POST {{host}}/api/user/subscribe/check
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "creatorId": ["0x3af605ec533ef13cff525c92ccad8608c58ad42e"]
+}
+

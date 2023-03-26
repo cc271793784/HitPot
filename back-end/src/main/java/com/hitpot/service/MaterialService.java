@@ -63,7 +63,6 @@ public class MaterialService {
         // 计算文件的md5值
         String md5 = DigestUtil.md5Hex(saveFile);
 
-        long duration = fetchVideoDuration(filePath);
         // 保存文件到数据库中
         Material material = Material.builder()
             .userId(userId)
@@ -72,10 +71,14 @@ public class MaterialService {
             .md5(md5)
             .size(saveFile.length())
             .materialType(materialType)
-            .duration(duration)
+            .duration(0L)
             .disabled(false)
             .deleted(false)
             .build();
+        if (materialType == MaterialType.VIDEO.getId()) {
+            long duration = fetchVideoDuration(filePath);
+            material.setDuration(duration);
+        }
         materialRepository.save(material);
 
         return MaterialVO.builder()

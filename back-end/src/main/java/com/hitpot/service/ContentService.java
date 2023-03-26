@@ -1,6 +1,7 @@
 package com.hitpot.service;
 
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
 import com.hitpot.common.PageChunk;
 import com.hitpot.common.PageUtils;
@@ -23,6 +24,7 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -90,11 +92,22 @@ public class ContentService {
 
         contentRepository.save(content);
 
+        // 添加时间线
+        UserTimeline userTimeline = UserTimeline.builder()
+            .userId(userId)
+            .contentId(content.getId())
+            .shareType(3)
+            .disabled(false)
+            .disabled(false)
+            .build();
+        userTimelineRepository.save(userTimeline);
+
         // 给创作者分配IP NFT
         walletService.presentContentNftToCreator(userId,
             ContentPurchaseNftForm.builder()
                 .contentId(content.getId())
-                .amountPot(content.getCountIpNft())
+                .amountPot(0)
+                .count(content.getCountIpNft())
                 .build()
         );
 
@@ -137,7 +150,7 @@ public class ContentService {
             .select(
                 qContentWatch.duration.sum()
             )
-            .where(qContentWatch.createTime.between(startTime, endTime).eq(qContentWatch.userId.eq(userId)))
+            .where(qContentWatch.createTime.between(startTime, endTime).and(qContentWatch.userId.eq(userId)))
             .fetchOne();
         if (duration == null) {
             duration = 0L;
@@ -146,6 +159,10 @@ public class ContentService {
     }
 
     public ContentHitLeftVO watchVideo(String userId, WatchForm watchForm) throws HitpotException {
+        if (watchForm.getDuration() <= 0) {
+            throw new HitpotException(HitpotExceptionEnum.CONTENT_WATCH_DURATION_INVALID);
+        }
+
         // 判断视频是否存在
         Optional<Content> optional = contentRepository.findById(watchForm.getContentId());
         if (optional.isEmpty()) {
@@ -156,6 +173,12 @@ public class ContentService {
         if (user == null) {
             throw new HitpotException(HitpotExceptionEnum.USER_NOT_EXIST);
         }
+
+        // 判断用户是否有观看权限
+        if (user.getLevel() < optional.get().getWatcherLevel()) {
+            throw new HitpotException(HitpotExceptionEnum.WATCH_LEVEL_NOT_MEET);
+        }
+
         // 判断当前用户已观看的时长是否符合挖矿限制: 金卡=8小时, 银卡=4小时, 无卡=2小时
         Long watchableDuration = getWatchableDurationByUser(user);
         if (watchableDuration <= 0) {
@@ -182,8 +205,8 @@ public class ContentService {
         ContentWatch contentWatch = ContentWatch.builder()
             .userId(userId)
             .contentId(watchForm.getContentId())
-            .amountHit(walletService.convertToSzaboFromEther(userLevelPermission.getAmountHitPerSecond() * duration))
-            .amountSec(walletService.convertToSzaboFromEther(userLevelPermission.getAmountSecPerSecond() * duration))
+            .amountHit(walletService.convertToSzaboFromEther(NumberUtil.mul(userLevelPermission.getAmountHitPerSecond(), duration.doubleValue())))
+            .amountSec(walletService.convertToSzaboFromEther(NumberUtil.mul(userLevelPermission.getAmountSecPerSecond(), duration.doubleValue())))
             .duration(duration)
             .userLevel(user.getLevel())
             .utmContent(utmContent)
@@ -340,16 +363,21 @@ public class ContentService {
         return PageUtils.buildContentVOPageChunk(paginationVO);
     }
 
-    public PageChunk<ContentVO> pageBySubscribe(String userId, PageRequest pageRequest) {
+    public PageChunk<TimelineVO> pageBySubscribe(String userId, PageRequest pageRequest) {
         List<SubscriptionCreator> subscriptionCreatorList = subscriptionCreatorRepository.findAllByUserId(userId);
-        List<String> creatorIdList = subscriptionCreatorList.stream().map(item -> item.getCreatorId()).collect(Collectors.toList());
+        List<String> creatorIdList = subscriptionCreatorList.stream().map(SubscriptionCreator::getCreatorId).collect(Collectors.toList());
         if (creatorIdList.isEmpty()) {
             creatorIdList.add("hello");
         }
-        QContent qContent = QContent.content;
-        BooleanExpression queryExpression = qContent.userId.in(creatorIdList);
-        Page<Content> pagination = contentRepository.findAll(queryExpression, pageRequest);
-        Page<ContentVO> paginationVO = pagination.map(content -> buildContent(userId, content));
+        QUserTimeline qUserTimeline = QUserTimeline.userTimeline;
+        Page<UserTimeline> pagination = userTimelineRepository.findAll(qUserTimeline.userId.in(creatorIdList), pageRequest);
+        Page<TimelineVO> paginationVO = pagination.map(userTimeline ->
+            TimelineVO.builder()
+                .contentTimelineId(userTimeline.getId())
+                .content(contentService.detailContent(userId, userTimeline.getContentId()))
+                .createTime(userTimeline.getCreateTime())
+                .shareType(userTimeline.getShareType())
+                .build());
         return PageUtils.buildContentVOPageChunk(paginationVO);
     }
 
@@ -429,6 +457,7 @@ public class ContentService {
                 .comment(userTimeline.getUserComment())
                 .content(contentService.detailContent(userId, userTimeline.getContentId()))
                 .createTime(userTimeline.getCreateTime())
+                .shareType(userTimeline.getShareType())
                 .build());
         return PageUtils.buildContentVOPageChunk(paginationVO);
     }
@@ -454,6 +483,24 @@ public class ContentService {
             .collect(Collectors.toList());
     }
 
+    /**
+     * 每日0点30分，定时计算收益
+     */
+    @Scheduled(cron = "0 30 0 * * ?")
+    public void calcIncome() {
+        // 对上一天的观看记录进行分组, 分享者，观看者，视频id
+        /**
+         * contentId, creatorId, referrerId sum(sec)
+         *
+         * 计算包含推荐者的收益，
+         * 计算不包含推荐者的收益，将不包含推荐着的收益打到特定账户中，特定推荐者提现接口
+         *
+         * 原始股东和创作者分享收益
+         *
+         * 添加收益记录
+         */
+    }
+
     private PageChunk<ContentVO> getContentVOPageChunk(String userId, List<Long> contentIdList, PageRequest pageRequest) {
         if (contentIdList.isEmpty()) {
             contentIdList.add(-1L);
@@ -469,7 +516,7 @@ public class ContentService {
         ContentHitLeftVO contentHitLeftVO = walletService.getLeftHit(content.getId());
         ContentVO contentVO = ContentVO.builder()
             .contentId(content.getId())
-            .creator(userService.detailUser(content.getUserId()))
+            .creator(userService.detailUser(userId, content.getUserId()))
             .videoFilename(content.getVideoFilename())
             .videoUrl(materialService.getMaterialUrl(content.getVideoFilename()))
             .coverImg(content.getCoverImg())
@@ -480,6 +527,7 @@ public class ContentService {
             .watcherLevel(content.getWatcherLevel())
             .countIpNft(content.getCountIpNft())
             .countIpNftForInvestor(content.getCountIpNftForInvestor())
+            .countMaxLimitPerInvestor(content.getCountMaxLimitPerInvestor())
             .countIpNftLeft(walletService.detailContentNft(content).getCountIpNftLeft())
             .priceIpNft(walletService.convertToEtherFromSzabo(content.getPriceIpNft()))
             .balanceHit(contentHitLeftVO.getAmountHit())

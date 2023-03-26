@@ -35,7 +35,7 @@ public class ErrorHandler {
     @ExceptionHandler(HitpotException.class)
     public ResponseEntity<?> handlerHitpotError(HitpotException e) {
         log.error("handler error: " + e.getMessage(), e);
-        RestResult<?> restResult = RestResult.error(ResultEnum.FAIL, e.getMessage());
+        RestResult<?> restResult = RestResult.error(e.getCode(), e.getMessage());
         return new ResponseEntity<>(restResult, HttpStatus.BAD_REQUEST);
     }
 }
