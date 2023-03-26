@@ -21,21 +21,33 @@ class MetaMaskWrapper extends EventEmitter {
   }
 
   init = async () => {
-    const provider = new ethers.BrowserProvider(window.ethereum)
-    const signer = await provider.getSigner()
-    this.provider = provider
-    this.signer = signer
-
     // @ts-ignore
     window.ethereum.on('accountsChanged', (accounts: string[]) => {
       this.emit('accountsChanged', accounts)
     })
   }
 
+  getProvider = (): BrowserProvider => {
+    this.provider = this.provider ?? new ethers.BrowserProvider(window.ethereum)
+    return this.provider
+  }
+
+  getSigner = async (): Promise<Signer> => {
+    const provider = this.getProvider()
+    this.signer = this.signer ?? (await provider.getSigner())
+    return this.signer
+  }
+
   ethAccounts = async (): Promise<string[]> =>
     new Promise((resolve, reject) => {
-      this.provider
-        ?.send('eth_accounts', {})
+      if (this.isMetaMaskInstalled() === false) {
+        reject(new Error('metamask not installed'))
+        return
+      }
+
+      const provider = this.getProvider()
+      provider
+        .send('eth_accounts', {})
         .then((result) => {
           resolve(result)
         })
@@ -50,12 +62,9 @@ class MetaMaskWrapper extends EventEmitter {
         reject(new Error('metamask not installed'))
         return
       }
-      if (this.provider === undefined) {
-        reject(new Error('not inited'))
-        return
-      }
 
-      this.provider
+      const provider = this.getProvider()
+      provider
         .send('eth_requestAccounts', {})
         .then((result) => {
           resolve(result)
@@ -71,11 +80,9 @@ class MetaMaskWrapper extends EventEmitter {
         reject(new Error('metamask not installed'))
         return
       }
-      if (this.provider === undefined) {
-        reject(new Error('not inited'))
-        return
-      }
-      this.provider
+
+      const provider = this.getProvider()
+      provider
         .send('personal_sign', [msg, from])
         .then((result) => {
           resolve(result)
@@ -86,28 +93,16 @@ class MetaMaskWrapper extends EventEmitter {
     })
 
   sendTransaction = async (address: string, count: string): Promise<void> => {
-    return new Promise(async (resolve, reject) => {
-      if (this.isMetaMaskInstalled() === false) {
-        reject(new Error('metamask not installed'))
-        return
-      }
-      if (this.signer === undefined) {
-        reject(new Error('not inited'))
-        return
-      }
+    if (this.isMetaMaskInstalled() === false) {
+      throw new Error('metamask not installed')
+    }
 
-      try {
-        const tx = await this.signer.sendTransaction({
-          to: address,
-          value: count,
-        })
-        await tx.wait()
-      } catch (error) {
-        reject(error)
-      }
-
-      resolve()
+    const signer = await this.getSigner()
+    const tx = await signer.sendTransaction({
+      to: address,
+      value: count,
     })
+    await tx.wait()
   }
 }
 
