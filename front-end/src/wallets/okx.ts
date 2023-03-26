@@ -22,7 +22,7 @@ class OkxWalletWrapper extends EventEmitter {
 
   init = async () => {
     // @ts-ignore
-    window.ethereum.on('accountsChanged', (accounts: string[]) => {
+    window.okxwallet.on('accountsChanged', (accounts: string[]) => {
       this.emit('accountsChanged', accounts)
     })
   }

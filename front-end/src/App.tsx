@@ -18,11 +18,12 @@ import config from 'web-api/config'
 import userStore from 'stores/user'
 import walletStore from 'stores/wallet'
 import uiStore from 'stores/ui'
+import persist from 'stores/persist'
 import { getWallet } from 'wallets/walletProvider'
 
 import Header from 'components/Header'
 import Footer from 'components/Footer'
-import { ProtectedRoute } from 'components/ProtectedRoute'
+import ProtectedRoute from 'components/ProtectedRoute'
 
 import Landing from 'pages/Landing'
 import PostVideo from 'pages/PostVideo'
@@ -30,7 +31,7 @@ import Wallet from 'pages/Wallet'
 import Home from 'pages/Home'
 import VideoDetail from 'pages/VideoDetail'
 import Settings from 'pages/Settings'
-import persist from 'stores/persist'
+import Faucet from 'pages/Faucet'
 
 function App() {
   const navigate = useNavigate()
@@ -170,6 +171,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <VideoDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/faucet'
+              element={
+                <ProtectedRoute>
+                  <Faucet />
                 </ProtectedRoute>
               }
             />

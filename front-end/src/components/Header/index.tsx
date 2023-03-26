@@ -12,7 +12,7 @@ import iconVideo from 'statics/images/icon-post-video.svg'
 import iconPerson from 'statics/images/icon-person.svg'
 import iconWallet from 'statics/images/icon-wallet.svg'
 
-import ConnectMetaMaskModal from '../ConnectMetaMaskModal'
+import ConnectWalletModal from '../ConnectWalletModal'
 import VipBadge from '../VipBadge'
 import UpgradeMemberCardLevelModal from '../UpgradeMemberCardLevelModal'
 
@@ -163,7 +163,7 @@ const Header = () => {
         </div>
       </div>
       {uiStore.shouldShowConnectWalletModal && (
-        <ConnectMetaMaskModal
+        <ConnectWalletModal
           onClose={() => {
             uiStore.shouldShowConnectWalletModal = false
           }}

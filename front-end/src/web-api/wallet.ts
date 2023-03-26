@@ -200,3 +200,35 @@ export async function withdraw(amountPot: number): Promise<boolean> {
       })
   })
 }
+
+interface FaucetResponse {
+  code: number
+  data: {
+    success: boolean
+  }
+  msg: string
+}
+
+export async function faucet(address: string): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    axios
+      .post<FaucetResponse>(
+        `${config.getApiServer()}/api/wallet/faucet`,
+        {
+          address,
+          amount: 100,
+        },
+        {
+          headers: {
+            Authorization: config.getAccessToken(),
+          },
+        },
+      )
+      .then((res) => {
+        resolve(res.data.code === config.getSuccessCode())
+      })
+      .catch((error) => {
+        reject(error)
+      })
+  })
+}

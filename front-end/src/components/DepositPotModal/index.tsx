@@ -48,7 +48,9 @@ const DepositPotModal = (props: Props) => {
           .catch((e) => {
             message.error('Deposit failed')
           })
-          .finally(() => {})
+          .finally(() => {
+            setIsDepositing(false)
+          })
       }
       setHasValidatedDepositPotCount(true)
     },
@@ -57,9 +59,6 @@ const DepositPotModal = (props: Props) => {
 
   const handleModalHide = useCallback(() => {
     onClose()
-    setDepositPotCount('')
-    setIsDepositCountValid(true)
-    setHasValidatedDepositPotCount(false)
   }, [onClose])
 
   return (

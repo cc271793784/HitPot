@@ -26,7 +26,7 @@ interface Props {
   onConnect: () => void
 }
 
-const ConnectMetaMaskModal = (props: Props) => {
+const ConnectWalletModal = (props: Props) => {
   const { onClose, onConnect } = props
 
   const [isConnecting, setIsConnecting] = useState(false)
@@ -100,33 +100,35 @@ const ConnectMetaMaskModal = (props: Props) => {
       keyboard={false}
     >
       <Modal.Header closeButton>
-        <Modal.Title>Connect your wallet</Modal.Title>
+        <Modal.Title>Connect your OKX wallet</Modal.Title>
       </Modal.Header>
       <Modal.Body className={cx('d-flex flex-column align-items-center')}>
-        <div className={cx('d-flex justify-content-between align-items-center', styles.icons)}>
-          <div className={cx('d-flex flex-column align-items-center')}>
+        {false && (
+          <div className={cx('d-flex justify-content-between align-items-center', styles.icons)}>
+            <div className={cx('d-flex flex-column align-items-center')}>
+              <img
+                src={iconLogo}
+                className={cx(styles.icon)}
+                height={64}
+                alt=''
+              />
+              <span className={styles.iconName}>HitPot</span>
+            </div>
             <img
-              src={iconLogo}
-              className={cx(styles.icon)}
-              height={64}
+              src={iconExchangeArrows}
               alt=''
             />
-            <span className={styles.iconName}>HitPot</span>
+            <div className={cx('d-flex flex-column align-items-center')}>
+              <img
+                src={iconMetamask}
+                width={64}
+                height={64}
+                alt=''
+              />
+              <span className={styles.iconName}>MetaMask</span>
+            </div>
           </div>
-          <img
-            src={iconExchangeArrows}
-            alt=''
-          />
-          <div className={cx('d-flex flex-column align-items-center')}>
-            <img
-              src={iconMetamask}
-              width={64}
-              height={64}
-              alt=''
-            />
-            <span className={styles.iconName}>MetaMask</span>
-          </div>
-        </div>
+        )}
         <Button
           className={cx(styles.connectButton)}
           onClick={handleClickConnect}
@@ -139,4 +141,4 @@ const ConnectMetaMaskModal = (props: Props) => {
   )
 }
 
-export default ConnectMetaMaskModal
+export default ConnectWalletModal
